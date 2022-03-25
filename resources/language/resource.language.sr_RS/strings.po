@@ -1,0 +1,69 @@
+# Srpski
+
+msgctxt "#32001"
+msgid "Error searching for subtitles"
+msgstr "Greška u pretraživanju titlova"
+
+msgctxt "#32002"
+msgid "Username"
+msgstr "Korisničko ime"
+
+msgctxt "#32003"
+msgid "Password"
+msgstr "Lozinka"
+
+msgctxt "#32004"
+msgid "Login Details"
+msgstr "Detalji prijave"
+
+msgctxt "#32005"
+msgid "Your Titlovi.com username or password is empty or not valid"
+msgstr "Vaše Titlovi.com korisničko ime nije podešeno ili je netačno"
+
+msgctxt "#32006"
+msgid "Unauthorized, please check your login information!"
+msgstr "Neovlašćeno, proverite svoje podatke za prijavu!"
+
+msgctxt "#32007"
+msgid "Titlovi.com login error, try again"
+msgstr "Greška pri prijavi na Titlovi.com, pokušajte ponovo"
+
+msgctxt "#32008"
+msgid "Please enter search text!"
+msgstr "Unesite tekst za pretragu!"
+
+msgctxt "#32009"
+msgid "Video not playing!"
+msgstr "Video se ne reprodukuje!"
+
+msgctxt "#32010"
+msgid "Error when downloading subtitle!"
+msgstr "Greška pri preuzimanju titla!"
+
+msgctxt "#32011"
+msgid "Choose subtitle file"
+msgstr "Izaberite datoteku titla"
+
+msgctxt "#32012"
+msgid "Convert latin/cyrillic alphabet"
+msgstr "Konverzija latinice/ćirilice"
+
+msgctxt "#32013"
+msgid "Don't convert"
+msgstr "Ne konvertuj"
+
+msgctxt "#32014"
+msgid "Convert latin to cyrillic"
+msgstr "Konvertuj latinicu u ćirilicu"
+
+msgctxt "#32015"
+msgid "Convert cyrillic to latin"
+msgstr "Konvertuj ćirilicu u latinicu"
+
+msgctxt "#32016"
+msgid "Subtitle conversion"
+msgstr "Konverzija titlova"
+
+msgctxt "#32017"
+msgid "Latin/Cyrillic conversion error, showing original subtitle"
+msgstr "Greška pri konverziji latinice/ćirilice, prikazuju se originalni titlovi"

@@ -501,8 +501,11 @@ class ActionHandler(object):
             except Exception as e:
                 episode = -1
 
-            if result_item['Title']:
+            if result_item['Year']:
                 title = '{0} ({1})'.format(title, year)
+            
+            elif result_item['Title']:
+                title = '{0}'.format(title)
 
             if season > 0 and episode > 0:
                 title = '{0} S{1}E{2}'.format(title, season, episode)

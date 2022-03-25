@@ -25,3 +25,4 @@ Kada koristite ruèno pretraživanje za TV serije koristite format za sezonu i epi
 	Za precizniju ruènu pretragu umesto naziva filma/serije možete koristiti IMDb tag, na pr. tt1234567
 	Za pretragu sezonskih titlova, kada su u jednom zip fajlu, koristite pored oznake sezone i format E00 za epizodu
 	Za pretragu titlova svih sezona u jednom fajlu koristite S00E00
+

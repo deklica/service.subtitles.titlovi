@@ -2,7 +2,7 @@
 Unofficial Kodi subtitles addon for Titlovi.com
 System Requirements: Kodi v19 (matrix) or higher
 
-Prerağen oficijalni Titlovi.com addon v1.2.0...
+PreraÄ‘en oficijalni Titlovi.com addon v1.2.0...
 
 Dodato:
 - srpski jezik interfejsa
@@ -10,19 +10,18 @@ Dodato:
 - izmene tektualno-vizuelne
 
 Ispravke:
-- pronalaenje titlova serija koje u imenu fajla imaju naziv epizode
-- pronalaenje i prikaz i æiriliènih titlova ukoliko je izabran srpski jezik
-- pronalaenje sezonskih titlova (cela sezona u jednom fajlu, netflix), posledica toga je da za pojedinaène titlove izbacuje u prikazu sve titlove sezone umesto samo za datu epizodu
-- sreğena notifikacija/greška koja izlazi ukoliko ne nağe nikakav rezultat
-- izmenjen prikaz rezultata pretrage, radi lakšeg izbora titla:
+- pronalaÅ¾enje titlova serija koje u imenu fajla imaju naziv epizode
+- pronalaÅ¾enje i prikaz i Ä‡iriliÄnih titlova ukoliko je izabran srpski jezik
+- pronalaÅ¾enje sezonskih titlova (cela sezona u jednom fajlu, netflix), posledica toga je da za pojedinaÄne titlove izbacuje u prikazu sve titlove sezone umesto samo za datu epizodu
+- sreÄ‘ena notifikacija/greÅ¡ka koja izlazi ukoliko ne naÄ‘e nikakav rezultat
+- izmenjen prikaz rezultata pretrage, radi lakÅ¡eg izbora titla:
 	- ispis naziva serije/filma
-	- dodata godina (naroèito korisno kod filmova sa istim nazivom iz razlièitih godina)
-	- sreğen prikaz sezone/epizode
-- sreğeno sortiranje titlova iz zip fajla sezone, koji se randomizirao ukoliko je veæ skinut i èita se iz keša
+	- dodata godina (naroÄito korisno kod filmova sa istim nazivom iz razliÄitih godina)
+	- sreÄ‘en prikaz sezone/epizode
+- sreÄ‘eno sortiranje titlova iz zip fajla sezone, koji se randomizirao ukoliko je veÄ‡ skinut i Äita se iz keÅ¡a
 
 Tip:
-Kada koristite ruèno pretraivanje za TV serije koristite format za sezonu i epizodu kao u ovom primeru: The Wire S01E01
-	Za precizniju ruènu pretragu umesto naziva filma/serije moete koristiti IMDb tag, na pr. tt1234567
+Kada koristite ruÄno pretraÅ¾ivanje za TV serije koristite format za sezonu i epizodu kao u ovom primeru: The Wire S01E01
+	Za precizniju ruÄnu pretragu umesto naziva filma/serije moÅ¾ete koristiti IMDb tag, na pr. tt1234567
 	Za pretragu sezonskih titlova, kada su u jednom zip fajlu, koristite pored oznake sezone i format E00 za epizodu
 	Za pretragu titlova svih sezona u jednom fajlu koristite S00E00
-

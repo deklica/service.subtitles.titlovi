@@ -21,7 +21,8 @@ Ispravke:
 - sređeno sortiranje titlova iz zip fajla sezone, koji se randomizirao ukoliko je već skinut i čita se iz keša
 
 Tip:  
-Kada koristite ručno pretraživanje za TV serije koristite format za sezonu i epizodu kao u ovom primeru: The Wire S01E01  
-	Za precizniju ručnu pretragu umesto naziva filma/serije možete koristiti IMDb tag, na pr. tt1234567  
-	Za pretragu sezonskih titlova, kada su u jednom zip fajlu, koristite pored oznake sezone i format E00 za epizodu  
-	Za pretragu titlova svih sezona u jednom fajlu koristite S00E00  
+Kada koristite ručno pretraživanje za TV serije koristite format za sezonu i epizodu kao u ovom primeru:  
+  The Wire S01E01  
+Za precizniju ručnu pretragu umesto naziva filma/serije možete koristiti IMDb tag, na pr. tt1234567  
+Za pretragu sezonskih titlova, kada su u jednom zip fajlu, koristite pored oznake sezone i format E00 za epizodu  
+Za pretragu titlova svih sezona u jednom fajlu koristite S00E00  

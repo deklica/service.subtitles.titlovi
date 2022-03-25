@@ -7,7 +7,7 @@ Prerađen oficijalni Titlovi.com addon v1.2.0...
 Dodato:
 - srpski jezik interfejsa
 - prikaz logo-a
-- izmene tektualno-vizuelne
+- izmene tektualno-vizuelne i u strukturi fajlova
 
 Ispravke:
 - pronalaženje titlova serija koje u imenu fajla imaju naziv epizode

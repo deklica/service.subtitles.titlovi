@@ -13,6 +13,7 @@ Ispravke:
 - pronalaženje titlova serija koje u imenu fajla imaju naziv epizode
 - pronalaženje i prikaz i ćiriličnih titlova ukoliko je izabran srpski jezik
 - pronalaženje sezonskih titlova (cela sezona u jednom fajlu, netflix), posledica toga je da za pojedinačne titlove izbacuje u prikazu sve titlove sezone umesto samo za datu epizodu
+- omogućena i jednocifrena pretraga sezona i epizoda (dozvoljen format je 'S##E##', dozvoljen broj ## je ranga 0-99)
 - sređena notifikacija/greška koja izlazi ukoliko ne nađe nikakav rezultat
 - izmenjen prikaz rezultata pretrage, radi lakšeg izbora titla:
 	- ispis naziva serije/filma
@@ -22,7 +23,7 @@ Ispravke:
 
 Tip:  
 Kada koristite ručno pretraživanje za TV serije koristite format za sezonu i epizodu kao u ovom primeru:  
-  The Wire S01E01  
+  The Wire S01E01 ili The Wire S1E1
 Za precizniju ručnu pretragu umesto naziva filma/serije možete koristiti IMDb tag, na pr. tt1234567  
-Za pretragu sezonskih titlova, kada su u jednom zip fajlu, koristite pored oznake sezone i format E00 za epizodu  
-Za pretragu titlova svih sezona u jednom fajlu koristite S00E00  
+Za pretragu sezonskih titlova, kada su u jednom zip fajlu, koristite pored oznake sezone i format E0 ili E00 za epizodu  
+Za pretragu titlova svih sezona u jednom fajlu koristite S0E0 ili S00E00  

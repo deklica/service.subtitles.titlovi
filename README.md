@@ -23,7 +23,7 @@ Ispravke:
 
 Tip:  
 Kada koristite ručno pretraživanje za TV serije koristite format za sezonu i epizodu kao u ovom primeru:  
-  The Wire S01E01 ili The Wire S1E1
+  The Wire S01E01 ili The Wire S1E1  
 Za precizniju ručnu pretragu umesto naziva filma/serije možete koristiti IMDb tag, na pr. tt1234567  
 Za pretragu sezonskih titlova, kada su u jednom zip fajlu, koristite pored oznake sezone i format E0 ili E00 za epizodu  
 Za pretragu titlova svih sezona u jednom fajlu koristite S0E0 ili S00E00  

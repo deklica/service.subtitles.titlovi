@@ -49,7 +49,7 @@ msgstr "Upišite tekst pretrage!"
 
 msgctxt "#32009"
 msgid "Video not playing!"
-msgstr "Video snimka se ne repoducira!"
+msgstr "Video se ne repoducira!"
 
 msgctxt "#32010"
 msgid "Error when downloading subtitle!"
@@ -81,4 +81,4 @@ msgstr "Pretvorba podnaslova"
 
 msgctxt "#32017"
 msgid "Latin/Cyrillic conversion error, showing original subtitle"
-msgstr "Greška kod konverzije latinica/ćirilica, prikazuju se orginalni podnaslovi"
+msgstr "Greška pretvorbe latinica/ćirilica, prikazuju se izvorni podnaslovi"

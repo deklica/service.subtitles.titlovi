@@ -95,7 +95,7 @@ def logger(message):
     xbmc.log("{0} - {1}".format(script_name, message))
 
 def show_notification(message):
-    xbmcgui.Dialog().notification(message)
+    xbmcgui.Dialog().notification(script_name, message, icon=xbmcgui.NOTIFICATION_INFO, time=2000)
 
 def normalize_string(_string):
     logger('normalize_string called with %s' % _string)

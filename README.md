@@ -28,3 +28,5 @@ Kada koristite ručno pretraživanje za TV serije koristite format za sezonu i e
 Za precizniju ručnu pretragu umesto naziva filma/serije možete koristiti IMDb tag, na pr. tt1234567  
 Za pretragu sezonskih titlova, kada su u jednom zip fajlu, koristite pored oznake sezone i format E0 ili E00 za epizodu  
 Za pretragu titlova svih sezona u jednom fajlu koristite S0E0 ili S00E00  
+
+<a href="https://raw.githubusercontent.com/deklica/repo.dexe/master/repo/repository.dexe/repository.dexe-1.0.0.zip" target="_blank">DOWNLOAD via dEXE's Addons Repo</a>

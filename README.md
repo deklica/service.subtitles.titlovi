@@ -16,11 +16,12 @@ Ispravke:
 - omogućena i jednocifrena pretraga sezona i epizoda (dozvoljen format je 'S##E##', broj ## je ranga 0-99)
 - sređena notifikacija/greška koja izlazi ukoliko ne nađe nikakav rezultat
 - sređen prikaz svih notifikacija/grešaka
+- sređeno da ukoliko nisu uneti podaci za logovanje u podešavanjima, iskoči prozor za unošenje istih
+- sređeno sortiranje titlova iz zip fajla sezone, koji se randomizirao ukoliko je već skinut i čita se iz keša
 - izmenjen prikaz rezultata pretrage, radi lakšeg izbora titla:
 	- ispis naziva serije/filma
 	- dodata godina (naročito korisno kod filmova sa istim nazivom iz različitih godina)
 	- sređen prikaz sezone/epizode
-- sređeno sortiranje titlova iz zip fajla sezone, koji se randomizirao ukoliko je već skinut i čita se iz keša
 
 Tip:  
 Kada koristite ručno pretraživanje za TV serije koristite format za sezonu i epizodu kao u ovom primeru:  

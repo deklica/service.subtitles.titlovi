@@ -1,5 +1,5 @@
 # service.subtitles.titlovi  
-Unofficial Kodi subtitles addon for Titlovi.com v1.3.0  
+[B]Unofficial Kodi subtitles addon for Titlovi.com v1.3.0[/B]  
 System Requirements: Kodi v19 (matrix) or higher  
 
 Prerađen oficijalni Titlovi.com addon v1.2.0...

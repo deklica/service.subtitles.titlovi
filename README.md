@@ -30,4 +30,5 @@ Za precizniju ručnu pretragu umesto naziva filma/serije možete koristiti IMDb 
 Za pretragu sezonskih titlova, kada su u jednom zip fajlu, koristite pored oznake sezone i format E0 ili E00 za epizodu  
 Za pretragu titlova svih sezona u jednom fajlu koristite S0E0 ili S00E00  
 
+
 **DOWNLOAD** via <a href="https://github.com/deklica/repo.dexe" target="_blank">dEXE's Addons Repo</a>

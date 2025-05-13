@@ -128,7 +128,7 @@ class SimpleCache(object):
         return result
 
 
-    def set(self, endpoint, data, checksum="", expiration=datetime.timedelta(days=30), json_data=False):
+    def set(self, endpoint, data, checksum="", expiration=datetime.timedelta(days=14), json_data=False):
         '''
             set data in cache
         '''

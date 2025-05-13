@@ -137,10 +137,14 @@
 				<setting id="results_limit" type="integer" label="32225" help="32226">	<!-- Results Limit -->
 					<level>0</level>
 					<default>50</default>
-					<control type="edit" format="integer">
-						<heading>32225</heading>
+					<constraints>
+						<minimum>1</minimum>
+						<maximum>50</maximum>
+						<step>1</step>
+					</constraints>
+					<control type="slider" format="integer">
+						<popup>false</popup>
 					</control>
-					<enable>false</enable>
 				</setting>
 			</group>
 		</category>
@@ -175,7 +179,11 @@
 					<control type="list" format="string">
 						<heading>32311</heading>
 					</control>
-					<enable>false</enable>
+				</setting>
+				<setting id="sort_series_episodes" type="boolean" label="32318" help="32319">	<!-- Sort series -->
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
 				</setting>
 				<setting id="include_imdb_id_in_search" type="boolean" label="32320" help="32321">	<!-- Search using IMDb ID -->
 					<level>0</level>

@@ -1307,19 +1307,23 @@ class ActionHandler(object):
 
         result_list = self._fetch_search_results(search_params)
 
-        if result_list is not None:
-            if result_list:
-                self._display_search_results(result_list)
-            else:
-                logger("No subtitle results found to display.")
+        if result_list is None:
+            logger("Search failed or was aborted (e.g., timeout, login error). No results to display.", xbmc.LOGWARNING)
+        elif not result_list:
+            logger("No subtitle results found for the current search criteria.", xbmc.LOGINFO)
+        else:
+            self._display_search_results(result_list)
 
 
     def _fetch_search_results(self, search_params):
         """
         Fetches subtitle search results, first checking the cache based on
         search parameters, then querying the API if no cached results are found and caches them.
+        
+        Returns:
+            'ResultsFound', 'PagesAvailable', 'CurrentPage', 'SubtitleResults'
         """
-        SEARCH_CACHE_EXPIRATION = timedelta(hours=12)
+        SEARCH_CACHE_EXPIRATION = timedelta(hours=8)
         cache_key_params = search_params.copy()
         keys_to_remove_from_cache_key = ["ignoreLangAndEpisode", "returnStatusCode", "username", "password"]
         for key in keys_to_remove_from_cache_key:
@@ -1380,7 +1384,7 @@ class ActionHandler(object):
                 resp_json = response.json()
                 
                 if resp_json and "SubtitleResults" in resp_json:
-                    result_list = resp_json['SubtitleResults']
+                    result_list = resp_json["SubtitleResults"]
                     logger(f"API returned {len(result_list)} results.")
                 else:
                     logger("API response OK but 'SubtitleResults' key missing or empty.", xbmc.LOGWARNING)
@@ -1443,7 +1447,7 @@ class ActionHandler(object):
 
             if result_list is not None and addon_cache and params_hash:
                 try:
-                    addon_cache.set(params_hash, result_list, SEARCH_CACHE_EXPIRATION)
+                    addon_cache.set(params_hash, result_list, expiration=SEARCH_CACHE_EXPIRATION)
                     logger(f"Stored {len(result_list)} results in cache.")
                 except Exception as cache_set_e:
                     logger(f"Error saving results to cache: {cache_set_e}", xbmc.LOGWARNING)
@@ -1455,9 +1459,109 @@ class ActionHandler(object):
 
     def _display_search_results(self, result_list):
         """
-        Processes the list of subtitle results and adds them to the Kodi listing.
+        Processes the list of subtitle results, sorts them, limits them,
+        and adds them to the Kodi listing.
         """
-        for result_item in result_list:
+        
+        def type_sort_key_local(item_type_val):
+            if item_type_val == 1: return 0
+            if item_type_val == 3: return 1
+            if item_type_val == 2: return 2
+            return 3
+            
+        def parse_api_date_local(date_str_val):
+            if not date_str_val:
+                return datetime.min
+            try:
+                if '.' in date_str_val:
+                    return datetime.strptime(date_str_val, "%Y-%m-%dT%H:%M:%S.%f")
+                else:
+                    return datetime.strptime(date_str_val, "%Y-%m-%dT%H:%M:%S")
+            except ValueError:
+                return datetime.min
+                
+        def episode_sort_key_local(episode_num_val):
+            if episode_num_val is None: return 99999
+            if episode_num_val == 0: return 1000
+            if episode_num_val == -2: return 2000
+            if episode_num_val == -3: return 3000
+            return -episode_num_val
+
+        sort_option = 0
+        try:
+            sort_option = int(GET_SETTING("sort_order"))
+        except (ValueError, TypeError, Exception) as e:
+            logger(f"Error reading 'sort_order' setting: {e}. Using default (0 - Date).", xbmc.LOGWARNING)
+            sort_option = 0
+
+        sort_series_episodes_enabled = False
+        try:
+            sort_series_episodes_enabled = GET_BOOL_SETTING("sort_series_episodes")
+        except Exception as e:
+            logger(f"Error reading 'sort_series_episodes' setting: {e}. Assuming disabled.", xbmc.LOGWARNING)
+
+        processed_list_for_sorting = []
+                
+        for item in result_list:
+            s_type = type_sort_key_local(item.get("Type"))
+            s_title = item.get("Title", "").lower()
+            s_year = -item.get("Year", 0)
+
+            s_date_obj = parse_api_date_local(item.get("Date"))
+            s_date_sort_val = -s_date_obj.timestamp() if s_date_obj != datetime.min else float("inf")
+
+            s_lang = item.get("Lang", "").lower()
+            s_downloads = -item.get("DownloadCount", 0)
+            s_rating = -item.get("Rating", 0.0)
+
+            s_season = -item.get("Season", -999) if item.get("Type") == 2 else 0
+            s_episode_key = episode_sort_key_local(item.get("Episode")) if item.get("Type") == 2 else 0
+
+            processed_list_for_sorting.append((
+                s_type, s_title, s_year,
+                s_date_sort_val,
+                s_lang,
+                s_downloads,
+                s_rating,
+                s_season if item.get("Type") == 2 and sort_series_episodes_enabled else 0,
+                s_episode_key if item.get("Type") == 2 and sort_series_episodes_enabled else 0,
+                item
+            ))                
+
+        # 0:type, 1:title, 2:year, 3:date_sort_val, 4:lang, 5:downloads, 6:rating, 7:season, 8:episode_key
+        
+        sort_key_lambda = None
+        if sort_option == 0:
+            sort_key_lambda = lambda x: (x[0], x[1], x[2], x[7], x[8], x[3])
+        elif sort_option == 1:
+            sort_key_lambda = lambda x: (x[0], x[1], x[2], x[4], x[7], x[8], x[3])
+        elif sort_option == 2:
+            sort_key_lambda = lambda x: (x[0], x[1], x[2], x[5], x[7], x[8], x[3])
+        elif sort_option == 3:
+            sort_key_lambda = lambda x: (x[0], x[1], x[2], x[6], x[7], x[8], x[3])
+        else:
+            sort_key_lambda = lambda x: (x[0], x[1], x[2], x[3], x[7], x[8])   
+
+        processed_list_for_sorting.sort(key=sort_key_lambda)
+
+        sorted_result_list = [item_tuple[9] for item_tuple in processed_list_for_sorting]  
+                
+        results_to_display_count = 50
+        try:
+            results_to_display_count = max(1, int(GET_SETTING("results_limit")))
+        except (ValueError, TypeError, Exception) as e:
+            logger(f"Error reading 'results_limit' setting: {e}. Using default of 50.", xbmc.LOGWARNING)
+            results_to_display_count = 50
+
+        final_list_to_display = sorted_result_list[:results_to_display_count]
+
+        if not final_list_to_display:
+            logger("No results to display after sorting and limiting.", xbmc.LOGINFO)
+            return
+
+        logger(f"Displaying {len(final_list_to_display)} of {len(result_list)} results (limit: {results_to_display_count}, sort: {sort_option}).", xbmc.LOGDEBUG)
+                
+        for result_item in final_list_to_display:
             api_title = result_item.get("Title", "Unknown Title")
             api_year = result_item.get("Year")
             api_season = result_item.get("Season")
@@ -1853,7 +1957,7 @@ class ActionHandler(object):
                             dummy_created_or_found = True
                         else:
                             logger(f"Creating global dummy file: {dummy_global_path}", xbmc.LOGDEBUG)
-                            with open(dummy_global_path, "w", encoding="utf-8") as f: f.write("1\n00:00:00,000 --> 00:00:00,100\n\n")
+                            with open(dummy_global_path, "w", encoding="utf-8") as f: f.write("1\n00:00:00,100 --> 00:00:00,500\n\n")
                             dummy_created_or_found = True
                             logger("Global dummy file created successfully.", xbmc.LOGDEBUG)
                     except Exception as create_err:
@@ -1903,4 +2007,7 @@ if action_handler.validate_params():
         logger("User is logged in.")
         action_handler.handle_action()
 
-xbmcplugin.endOfDirectory(plugin_handle)
+if plugin_handle != -1:
+    xbmcplugin.endOfDirectory(plugin_handle)
+else:
+    logger("Invalid plugin handle. endOfDirectory not called.", xbmc.LOGWARNING)

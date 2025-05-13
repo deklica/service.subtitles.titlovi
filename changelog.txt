@@ -1,5 +1,11 @@
 [COLOR darkgoldenrod]Titlovi.com Addon - Changelog[/COLOR]
 
+[COLOR dodgerblue][B]v1.9.1 (13.05.2025.)[/B][/COLOR]
+[B]Ispravke:[/B]
+- Dorađene i dodate neke opcije sortiranja
+- Ispravljen bag sa upisom u keš
+
+
 [COLOR dodgerblue][B]v1.9.0 (28.04.2025.)[/B][/COLOR]
 [B]Promene:[/B]
 - Potpuno prerađen kod, sređen i optimizovan uz brojne izmene i dodatke

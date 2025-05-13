@@ -255,6 +255,14 @@ msgctxt "#32316"
 msgid "Rating"
 msgstr "Ocena"
 
+msgctxt "#32318"
+msgid "Sort series (Season/Episode desc, Season Packs last)"
+msgstr "Sortiraj serije (Sezona/Epizoda opadajuće, Paketi sezona na kraju)"
+
+msgctxt "#32319"
+msgid "For TV series, this overrides other sorts: orders by Season (newest) & Episode (highest). Season packs follow their season; Specials/Pilots are last."
+msgstr "Za TV serije, ovo preglasava druge načine sortiranja: sortira po Sezoni (najnovija prvo) i Epizodi (najveći broj prvo). Paketi sezona prate epizode svoje sezone; Specijali/Piloti su poslednji."
+
 msgctxt "#32320"
 msgid "Search using IMDb ID (if available)"
 msgstr "Pretraži koristeći IMDb ID (ako je dostupan)"

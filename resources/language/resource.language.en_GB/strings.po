@@ -330,6 +330,16 @@ msgctxt "#32316"
 msgid "Rating"
 msgstr ""
 
+# Setting label: Sort Series/Episodes toggle
+msgctxt "#32318"
+msgid "Sort series (Season/Episode desc, Season Packs last)"
+msgstr ""
+
+# Setting help: Sort Series/Episodes toggle
+msgctxt "#32319"
+msgid "For TV series, this overrides other sorts: orders by Season (newest) & Episode (highest). Season packs follow their season; Specials/Pilots are last."
+msgstr ""
+
 # Setting label: Include imdb id toggle
 msgctxt "#32320"
 msgid "Search using IMDb ID (if available)"

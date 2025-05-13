@@ -21,3 +21,4 @@ Tip 2:
 Sa korišćenjem addon-a <a href="https://github.com/deklica/service.subloader">SubLoader</a>, ne samo da će se dijalog za titlove sam pokretati pri početku reprodukcije, već od sad možete i bez pokretanja videa, iz kontekst menija proveriti da li postoje titlovi za neku stavku (film, seriju, sezonu ili epizodu).
 
 <a href="https://deklica.github.io" target="_blank">**Download**</a><br>
+<a href="https://github.com/deklica/service.subtitles.titlovi/blob/master/changelog.txt" target="_blank">Changelog</a><br>

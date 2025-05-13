@@ -6,8 +6,9 @@
 - Ispravljen bag sa upisom u keš
 
 
-[COLOR dodgerblue][B]v1.9.0 (28.04.2025.)[/B][/COLOR]
+[COLOR dodgerblue][B]v1.9.0 (28.04.2025. - official)[/B][/COLOR]
 [B]Promene:[/B]
+- Addon je postao oficijalni, izmenjen naziv
 - Potpuno prerađen kod, sređen i optimizovan uz brojne izmene i dodatke
 - Dorađeno logovanje i notifikacije, za logovanje dodat svič u podešavanjima (da bi se videlo podešavanja moraju da budu na Expert)
 - Dodate mnogobrojne opcije u podešavanjima
@@ -22,7 +23,7 @@
 - i još mnogo, što sitnih što krupnih izmena kojih se i ne sećam :)
 
 
-[COLOR dodgerblue][B]v1.3.0 (28.02.2022)[/B][/COLOR]
+[COLOR dodgerblue][B]v1.3.0 (28.02.2022 - first release)[/B][/COLOR]
 [B]Promene:[/B]
 - promenjen ID addona
 - prerađen oficijalni addon v1.2.0

@@ -159,76 +159,76 @@ def check_and_set_paths_in_settings():
 
 
 def _get_dir_size(start_path):
-	"""
-	Recursively calculates the size of a directory in bytes using xbmcvfs.
-	"""
-	total_size = 0
-	if not start_path.endswith(os.sep):
-		start_path += os.sep
+    """
+    Recursively calculates the size of a directory in bytes using xbmcvfs.
+    """
+    total_size = 0
+    if not start_path.endswith(os.sep):
+        start_path += os.sep
 
-	try:
-		dirs, files = xbmcvfs.listdir(start_path)
+    try:
+        dirs, files = xbmcvfs.listdir(start_path)
 
-		for f in files:
-			try:
-				file_path = os.path.join(start_path, f)
-				stat_info = xbmcvfs.Stat(file_path)
-				total_size += stat_info.st_size()
-			except Exception as stat_e:
-				logger(f"Error stating file '{file_path}': {stat_e}", xbmc.LOGWARNING)
+        for f in files:
+            try:
+                file_path = os.path.join(start_path, f)
+                stat_info = xbmcvfs.Stat(file_path)
+                total_size += stat_info.st_size()
+            except Exception as stat_e:
+                logger(f"Error stating file '{file_path}': {stat_e}", xbmc.LOGWARNING)
 
-		for d in dirs:
-			try:
-				dir_path = os.path.join(start_path, d) + os.sep
-				total_size += _get_dir_size(dir_path)
-			except Exception as list_e:
-				logger(f"Error accessing/recursing subdirectory '{dir_path}': {list_e}", xbmc.LOGWARNING)
+        for d in dirs:
+            try:
+                dir_path = os.path.join(start_path, d) + os.sep
+                total_size += _get_dir_size(dir_path)
+            except Exception as list_e:
+                logger(f"Error accessing/recursing subdirectory '{dir_path}': {list_e}", xbmc.LOGWARNING)
 
-	except Exception as e:
-		logger(f"Error listing directory '{start_path}': {e}", xbmc.LOGERROR)
-	return total_size
+    except Exception as e:
+        logger(f"Error listing directory '{start_path}': {e}", xbmc.LOGERROR)
+    return total_size
 
 
 def update_cache_info_setting():
-	"""
-	Calculates the size and number of folders in TEMP_DIR and updates the corresponding setting.
-	"""
-	size_mb_str = "N/A"
-	folder_count = 0
-	display_text = GET_STRING(32030)
+    """
+    Calculates the size and number of folders in TEMP_DIR and updates the corresponding setting.
+    """
+    size_mb_str = "N/A"
+    folder_count = 0
+    display_text = GET_STRING(32030)
 
-	try:
-		if not xbmcvfs.exists(TEMP_DIR):
-			logger(f"Temp cache directory does not exist: {TEMP_DIR}")
-			display_text = GET_STRING(32031)
-			SET_SETTING("cache_info_display", display_text)
-			return
+    try:
+        if not xbmcvfs.exists(TEMP_DIR):
+            logger(f"Temp cache directory does not exist: {TEMP_DIR}")
+            display_text = GET_STRING(32031)
+            SET_SETTING("cache_info_display", display_text)
+            return
 
-		logger(f"Checking cache info for path: {TEMP_DIR}", xbmc.LOGDEBUG)
+        logger(f"Checking cache info for path: {TEMP_DIR}", xbmc.LOGDEBUG)
 
-		total_size_bytes = _get_dir_size(TEMP_DIR)
-		size_mb = total_size_bytes / (1024.0 * 1024.0)
-		size_mb_str = f"{size_mb:.2f}"
+        total_size_bytes = _get_dir_size(TEMP_DIR)
+        size_mb = total_size_bytes / (1024.0 * 1024.0)
+        size_mb_str = f"{size_mb:.2f}"
 
-		try:
-			dirs, _ = xbmcvfs.listdir(TEMP_DIR)
-			folder_count = len(dirs)
-		except Exception as list_e:
-			logger(f"Error listing TEMP_DIR for counting: {list_e}", xbmc.LOGWARNING)
-			folder_count = "N/A"
+        try:
+            dirs, _ = xbmcvfs.listdir(TEMP_DIR)
+            folder_count = len(dirs)
+        except Exception as list_e:
+            logger(f"Error listing TEMP_DIR for counting: {list_e}", xbmc.LOGWARNING)
+            folder_count = "N/A"
 
-		subtitles_label = GET_STRING(32033)
-		display_text = f"[B]{size_mb_str}[/B] MB ([B]{folder_count}[/B] {subtitles_label})"
+        subtitles_label = GET_STRING(32033)
+        display_text = f"[B]{size_mb_str}[/B] MB ([B]{folder_count}[/B] {subtitles_label})"
 
-	except Exception as e:
-		logger(f"Error calculating cache info: {e}", xbmc.LOGERROR)
-		display_text = GET_STRING(32032)
+    except Exception as e:
+        logger(f"Error calculating cache info: {e}", xbmc.LOGERROR)
+        display_text = GET_STRING(32032)
 
-	try:
-		SET_SETTING("cache_info_display", display_text)
-		logger("Cache info setting updated.", xbmc.LOGDEBUG)
-	except Exception as set_e:
-		logger(f"Failed to update cache_info_display setting: {set_e}", xbmc.LOGERROR)
+    try:
+        SET_SETTING("cache_info_display", display_text)
+        logger("Cache info setting updated.", xbmc.LOGDEBUG)
+    except Exception as set_e:
+        logger(f"Failed to update cache_info_display setting: {set_e}", xbmc.LOGERROR)
 
 check_and_set_paths_in_settings()
 
@@ -823,6 +823,9 @@ class ActionHandler(object):
                 logger(f"Failed to calculate credentials hash: {hash_e}", xbmc.LOGWARNING)
                 login_data.pop("CredentialsHash", None)
 
+            if "ExpirationDate" in login_data and isinstance(login_data["ExpirationDate"], datetime):
+                login_data["ExpirationDate"] = login_data["ExpirationDate"].isoformat()
+
             addon_cache.set(
                 "titlovi_com_login_data",
                 login_data,
@@ -887,12 +890,18 @@ class ActionHandler(object):
                 return self._perform_fresh_login()
 
             expiration_date_string = titlovi_com_login_data["ExpirationDate"]
+
             if not expiration_date_string:
                 logger("Expiration date missing in cached data. Cache invalid.", xbmc.LOGWARNING)
                 return self._perform_fresh_login()
 
-            expiration_date = datetime.strptime(expiration_date_string, "%Y-%m-%dT%H:%M:%S.%f")
-            time_left = expiration_date - datetime.now()
+            try:
+                expiration_date = datetime.fromisoformat(expiration_date_string)
+                time_left = expiration_date - datetime.now()
+
+            except Exception as e:
+                logger(f"ERROR parsing expiration date: '{expiration_date_string}': {e}", xbmc.LOGERROR)
+                return self._perform_fresh_login()
 
             if time_left <= TOKEN_EXPIRATION_THRESHOLD:
                 logger(f"Cached token expires soon ({time_left}). Refreshing.")
@@ -1375,8 +1384,9 @@ class ActionHandler(object):
 
             try:
                 logger(f"API Search Params: {search_params}", xbmc.LOGDEBUG)
-                timeout = int(GET_SETTING("request_timeout") or 10)
-                response = requests.get(f"{API_BASE_URL}/search", params=search_params, timeout=timeout)
+                connect_timeout = int(GET_SETTING("request_timeout") or 10)
+                read_timeout = 20
+                response = requests.get(f"{API_BASE_URL}/search", params=search_params, timeout=(connect_timeout, read_timeout))
                 logger(f"API Response Status: {response.status_code}")
                 logger(f"API URL Queried: {response.url}", xbmc.LOGDEBUG)
                 
@@ -1389,6 +1399,10 @@ class ActionHandler(object):
                 else:
                     logger("API response OK but 'SubtitleResults' key missing or empty.", xbmc.LOGWARNING)
                     result_list = []
+
+            except requests.exceptions.Timeout:
+                logger("API request timed out.", xbmc.LOGWARNING)
+                result_list = None
 
             except requests.exceptions.HTTPError as e:
                 if e.response.status_code == requests.codes.unauthorized: # 401
@@ -1409,6 +1423,9 @@ class ActionHandler(object):
                             else:
                                 logger("API retry OK but 'SubtitleResults' missing/empty.", xbmc.LOGWARNING)
                                 result_list = []
+                        except requests.exceptions.Timeout:
+                            logger("Retry API request timed out.", xbmc.LOGWARNING)
+                            result_list = None
                         except requests.exceptions.HTTPError as retry_http_e:
                             logger(f"HTTP error on API search retry: {retry_http_e}", xbmc.LOGERROR)
                             show_notification(GET_STRING(32006))
@@ -1447,6 +1464,12 @@ class ActionHandler(object):
 
             if result_list is not None and addon_cache and params_hash:
                 try:
+                    for item in result_list:
+                        date_val = item.get("Date")
+                        if isinstance(date_val, datetime):
+                            item["Date"] = date_val.isoformat()
+                        elif not isinstance(date_val, str):
+                            item["Date"] = str(date_val)
                     addon_cache.set(params_hash, result_list, expiration=SEARCH_CACHE_EXPIRATION)
                     logger(f"Stored {len(result_list)} results in cache.")
                 except Exception as cache_set_e:
@@ -1468,20 +1491,34 @@ class ActionHandler(object):
             if item_type_val == 3: return 1
             if item_type_val == 2: return 2
             return 3
-            
-        def parse_api_date_local(date_str_val):
-            if not date_str_val:
+
+        def parse_api_date_local(date_val):
+            if isinstance(date_val, datetime):
+                return date_val
+
+            if not isinstance(date_val, str) or not date_val:
                 return datetime.min
+
             try:
-                if '.' in date_str_val:
-                    return datetime.strptime(date_str_val, "%Y-%m-%dT%H:%M:%S.%f")
+                return datetime.fromisoformat(date_val)
+            except Exception as iso_err:
+                logger(f"fromisoformat failed for '{date_val}': {iso_err}", xbmc.LOGDEBUG)
+
+            try:
+                if "." in date_val:
+                    main, frac = date_val.split(".")
+                    frac = "".join(c for c in frac if c.isdigit())
+                    frac_padded = frac.ljust(6, "0")[:6]
+                    full_date = f"{main}.{frac_padded}"
+                    return datetime.strptime(full_date, "%Y-%m-%dT%H:%M:%S.%f")
                 else:
-                    return datetime.strptime(date_str_val, "%Y-%m-%dT%H:%M:%S")
-            except ValueError:
+                    return datetime.strptime(date_val, "%Y-%m-%dT%H:%M:%S")
+            except Exception as fallback_err:
+                logger(f"parse_api_date_local ERROR: Failed to parse '{date_val}': {fallback_err}", xbmc.LOGWARNING)
                 return datetime.min
-                
+   
         def episode_sort_key_local(episode_num_val):
-            if episode_num_val is None: return 99999
+            if episode_num_val is None: return 9999
             if episode_num_val == 0: return 1000
             if episode_num_val == -2: return 2000
             if episode_num_val == -3: return 3000
@@ -1501,7 +1538,7 @@ class ActionHandler(object):
             logger(f"Error reading 'sort_series_episodes' setting: {e}. Assuming disabled.", xbmc.LOGWARNING)
 
         processed_list_for_sorting = []
-                
+
         for item in result_list:
             s_type = type_sort_key_local(item.get("Type"))
             s_title = item.get("Title", "").lower()
@@ -1514,7 +1551,7 @@ class ActionHandler(object):
             s_downloads = -item.get("DownloadCount", 0)
             s_rating = -item.get("Rating", 0.0)
 
-            s_season = -item.get("Season", -999) if item.get("Type") == 2 else 0
+            s_season = -item.get("Season", -9999) if item.get("Type") == 2 else 0
             s_episode_key = episode_sort_key_local(item.get("Episode")) if item.get("Type") == 2 else 0
 
             processed_list_for_sorting.append((

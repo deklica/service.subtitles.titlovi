@@ -1,6 +1,6 @@
 # service.subtitles.titlovi  
-<B>Official Kodi subtitles addon for Titlovi.com v1.9.1</B>  
-System Requirements: Kodi v19 (matrix) or higher  
+<B>Official Kodi subtitles addon for Titlovi.com v1.9.2</B>  
+System Requirements: Kodi v20 (nexus) or higher  
 
 Search and download subtitles for Movies, Documentaries and TV Series from <B>Titlovi.com</B>.  
 Supported languages: English, Serbian, Croatian, Bosnian, Macedonian and Slovenian.  

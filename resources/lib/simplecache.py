@@ -105,7 +105,7 @@ class SimpleCache(object):
             self.close()
 
 
-    def get(self, endpoint, checksum="", json_data=False):
+    def get(self, endpoint, checksum="", json_data=True):
         '''
             get object from cache and return the results
             endpoint: the (unique) name of the cache object as reference
@@ -128,7 +128,7 @@ class SimpleCache(object):
         return result
 
 
-    def set(self, endpoint, data, checksum="", expiration=datetime.timedelta(days=14), json_data=False):
+    def set(self, endpoint, data, checksum="", expiration=datetime.timedelta(days=14), json_data=True):
         '''
             set data in cache
         '''
@@ -229,7 +229,9 @@ class SimpleCache(object):
                     if json_data or self.data_is_json:
                         cachedata = json.loads(cachedata_str)
                     else:
-                        cachedata = eval(cachedata_str)
+                        #cachedata = eval(cachedata_str)
+                        self._log_msg("Non-JSON cache is disabled for safety. Skipping.", xbmc.LOGERROR)
+                        return None
 
                     if isinstance(cachedata, (list, tuple)) and len(cachedata) >= 3:
                         if cachedata[0] > cur_time:
@@ -281,7 +283,9 @@ class SimpleCache(object):
                             if json_data or self.data_is_json:
                                 result = json.loads(cache_data[1])
                             else:
-                                result = eval(cache_data[1])
+                                #result = eval(cache_data[1])
+                                self._log_msg("Unsafe DB cache format (non-JSON) is disabled. Skipping.", xbmc.LOGWARNING)
+                                return None
 
                             if self.enable_mem_cache and hasattr(self, '_win') and self._win is not None:
                                 self._set_mem_cache(endpoint, cache_data[2], cache_data[0], result, json_data)

@@ -44,6 +44,20 @@ class SimpleCache(object):
         try:
             self._win = xbmcgui.Window(10000)
             self._monitor = xbmc.Monitor()
+            
+            try:
+                test_key = "simplecache.init.test"
+                test_val = "ok"
+                self._win.setProperty(test_key, test_val)
+                if self._win.getProperty(test_key) != test_val:
+                    self._log_msg("Window(10000) property test failed — disabling memcache", xbmc.LOGWARNING)
+                    self.enable_mem_cache = False
+                else:
+                    self._win.clearProperty(test_key)
+            except Exception as e:
+                self._log_msg(f"Window(10000) property access error: {e} — disabling memcache", xbmc.LOGERROR)
+                self.enable_mem_cache = False
+            
             if self._win is None or self._monitor is None:
                 raise RuntimeError("Failed to get Window or Monitor")
             self.check_cleanup()
@@ -58,7 +72,7 @@ class SimpleCache(object):
         return f"{self._mem_cache_prefix}{suffix}"
 
 
-    def _log_msg(self, msg, loglevel=xbmc.LOGDEBUG):
+    def _log_msg(self, msg, loglevel=xbmc.LOGINFO):
         '''Helper to send a message to the kodi log via external or fallback logger.'''
         prefix_tag = getattr(self, '_log_prefix', None)
         if prefix_tag:
@@ -111,6 +125,8 @@ class SimpleCache(object):
             endpoint: the (unique) name of the cache object as reference
             checkum: optional argument to check if the checksum in the cacheobject matches the checkum provided
         '''
+        self._log_msg(f"get(): endpoint={endpoint}", xbmc.LOGINFO)
+
         if not hasattr(self, '_win') or self._win is None:
             self._log_msg("Cache not properly initialized (Window missing). Cannot get.", xbmc.LOGERROR)
             return None
@@ -119,10 +135,14 @@ class SimpleCache(object):
         cur_time = self._get_timestamp(datetime.datetime.now())
         result = None
 
-        if self.enable_mem_cache:
+        if self.enable_mem_cache and self._win is not None:
             result = self._get_mem_cache(endpoint, checksum, cur_time, json_data)
+        else:
+            if self.enable_mem_cache:
+                self._log_msg("Memcache skipped: no current window dialog available.", xbmc.LOGINFO)
 
         if result is None:
+            self._log_msg(f"Memcache miss or disabled for endpoint '{endpoint}', falling back to DB cache", xbmc.LOGINFO)
             result = self._get_db_cache(endpoint, checksum, cur_time, json_data)
 
         return result
@@ -132,6 +152,8 @@ class SimpleCache(object):
         '''
             set data in cache
         '''
+        self._log_msg(f"set(): endpoint={endpoint}", xbmc.LOGINFO)
+        
         if not hasattr(self, '_win') or self._win is None:
             self._log_msg("Cache not properly initialized (Window missing). Cannot set.", xbmc.LOGERROR)
             return
@@ -142,7 +164,7 @@ class SimpleCache(object):
             checksum_val = self._get_checksum(checksum)
             expires = self._get_timestamp(datetime.datetime.now() + expiration)
 
-            if self.enable_mem_cache and not self._exit:
+            if self.enable_mem_cache and not self._exit and self._win is not None:
                 self._set_mem_cache(endpoint, checksum_val, expires, data, json_data)
 
             if self._db_path is not None and not self._exit:
@@ -161,7 +183,7 @@ class SimpleCache(object):
             return
 
         endpoint_str = str(endpoint)
-        self._log_msg(f"Deleting cache for endpoint: '{endpoint_str}'", xbmc.LOGDEBUG)
+        self._log_msg(f"Deleting cache for endpoint: '{endpoint_str}'", xbmc.LOGINFO)
         delete_task_name = f"delete.{endpoint_str}"
         self._busy_tasks.append(delete_task_name)
 
@@ -170,7 +192,7 @@ class SimpleCache(object):
                 prop_key = self._get_prop_key(endpoint_str)
                 try:
                     self._win.clearProperty(prop_key)
-                    self._log_msg(f"Deleted '{prop_key}' from memory cache.", xbmc.LOGDEBUG)
+                    self._log_msg(f"Deleted '{prop_key}' from memory cache.", xbmc.LOGINFO)
                 except Exception as e:
                     self._log_msg(f"Error deleting '{prop_key}' from memory cache: {e}", xbmc.LOGWARNING)
 
@@ -178,7 +200,7 @@ class SimpleCache(object):
                 query = 'DELETE FROM simplecache WHERE id = ?'
                 try:
                     self._execute_sql(query, (endpoint_str,))
-                    self._log_msg(f"Executed DB delete for '{endpoint_str}'.", xbmc.LOGDEBUG)
+                    self._log_msg(f"Executed DB delete for '{endpoint_str}'.", xbmc.LOGINFO)
                 except Exception as e:
                     self._log_msg(f"Error deleting '{endpoint_str}' from database cache: {e}", xbmc.LOGERROR)
         finally:
@@ -227,7 +249,12 @@ class SimpleCache(object):
             if cachedata_str:
                 try:
                     if json_data or self.data_is_json:
-                        cachedata = json.loads(cachedata_str)
+                        try:
+                            cachedata = json.loads(cachedata_str)
+                        except Exception as json_err:
+                            self._log_msg(f"Corrupted JSON in memcache: {prop_key}, error: {json_err}. Clearing.", xbmc.LOGWARNING)
+                            self._win.clearProperty(prop_key)
+                            return None
                     else:
                         #cachedata = eval(cachedata_str)
                         self._log_msg("Non-JSON cache is disabled for safety. Skipping.", xbmc.LOGERROR)
@@ -277,6 +304,7 @@ class SimpleCache(object):
             cache_data_cursor = self._execute_sql(query, (endpoint,))
             if cache_data_cursor:
                 cache_data = cache_data_cursor.fetchone()
+                cache_data_cursor.close() 
                 if cache_data and cache_data[0] > cur_time:
                     if not checksum or cache_data[2] == checksum:
                         try:
@@ -329,14 +357,16 @@ class SimpleCache(object):
 
         try:
             if self._win.getProperty(prop_busy):
-                self._log_msg("Cleanup already running (busy flag set).", xbmc.LOGDEBUG)
+                self._log_msg("Cleanup already running (busy flag set).", xbmc.LOGINFO)
                 return
-        except Exception: pass
+        except Exception:
+            pass
 
         self._busy_tasks.append(cleanup_task_name)
         self._log_msg("Running cleanup...")
         try:
-            try: self._win.setProperty(prop_busy, "busy")
+            try:
+                self._win.setProperty(prop_busy, "busy")
             except Exception as set_busy_e:
                 self._log_msg(f"Error setting busy flag: {set_busy_e}", xbmc.LOGWARNING)
 
@@ -351,6 +381,7 @@ class SimpleCache(object):
                     cursor = self._execute_sql(query)
                     if cursor:
                         db_results = cursor.fetchall()
+                        cursor.close()
                         for cache_id, cache_expires in db_results:
                             ids_found_in_db.append(cache_id)
                             if self._exit or self._monitor.abortRequested():
@@ -360,28 +391,29 @@ class SimpleCache(object):
                                 delete_query = 'DELETE FROM simplecache WHERE id = ?'
                                 try:
                                     self._execute_sql(delete_query, (cache_id,))
-                                    self._log_msg(f"Deleted expired DB entry: {cache_id}", xbmc.LOGDEBUG)
+                                    self._log_msg(f"Deleted expired DB entry: {cache_id}", xbmc.LOGINFO)
                                 except Exception as del_e:
                                     self._log_msg(f"Error deleting expired DB entry {cache_id}: {del_e}", xbmc.LOGWARNING)
+
                         try:
                             self._execute_sql("VACUUM")
-                            self._log_msg("DB VACUUM executed.", xbmc.LOGDEBUG)
+                            self._log_msg("DB VACUUM executed.", xbmc.LOGINFO)
                         except Exception as vac_e:
                             self._log_msg(f"Error during DB VACUUM: {vac_e}", xbmc.LOGWARNING)
                 except Exception as e:
                     self._log_msg(f"Error during DB cleanup phase: {e}", xbmc.LOGERROR)
-                finally:
-                    if cursor and hasattr(cursor, 'close'):
-                        try: cursor.close()
-                        except: pass
 
             for cache_id in ids_found_in_db:
-                if self._exit or self._monitor.abortRequested(): break
+                if self._exit or self._monitor.abortRequested():
+                    break
                 mem_key = self._get_prop_key(cache_id)
-                try: self._win.clearProperty(mem_key)
-                except: pass
+                try:
+                    self._win.clearProperty(mem_key)
+                except:
+                    pass
 
-            try: self._win.setProperty(prop_lastexec, repr(cur_time))
+            try:
+                self._win.setProperty(prop_lastexec, repr(cur_time))
             except Exception as set_last_e:
                 self._log_msg(f"Error setting last executed flag: {set_last_e}", xbmc.LOGWARNING)
 
@@ -390,8 +422,10 @@ class SimpleCache(object):
         finally:
             if cleanup_task_name in self._busy_tasks:
                 self._busy_tasks.remove(cleanup_task_name)
-            try: self._win.clearProperty(prop_busy)
-            except: pass
+            try:
+                self._win.clearProperty(prop_busy)
+            except:
+                pass
 
 
     def _get_database(self):
@@ -421,7 +455,7 @@ class SimpleCache(object):
             if connection:
                 try:
                     connection.close()
-                    self._log_msg("Closed DB connection before delete/recreate.", xbmc.LOGDEBUG)
+                    self._log_msg("Closed DB connection before delete/recreate.", xbmc.LOGINFO)
                 except Exception as close_e:
                     self._log_msg(f"Error closing DB connection: {close_e}", xbmc.LOGWARNING)
 
@@ -430,7 +464,7 @@ class SimpleCache(object):
                     if not xbmcvfs.delete(dbfile):
                         self._log_msg(f"Failed to delete existing DB file (after closing connection): {dbfile}", xbmc.LOGERROR)
                     else:
-                        self._log_msg(f"Deleted existing DB file: {dbfile}", xbmc.LOGINFO)
+                        self._log_msg(f"Deleted existing DB file: {dbfile}")
                 except Exception as del_err:
                     self._log_msg(f"Error deleting DB file {dbfile}: {del_err}", xbmc.LOGERROR)
 
@@ -440,7 +474,7 @@ class SimpleCache(object):
                 new_connection.execute(
                     """CREATE TABLE IF NOT EXISTS simplecache(
                     id TEXT UNIQUE, expires INTEGER, data TEXT, checksum INTEGER)""")
-                self._log_msg("DB table recreated.", xbmc.LOGINFO)
+                self._log_msg("DB table recreated.")
                 return new_connection
             except Exception as error_recreate:
                 self._log_msg(f"Exception while recreating database: {error_recreate}", xbmc.LOGERROR)
@@ -459,7 +493,7 @@ class SimpleCache(object):
 
         retries = 0
         max_retries = 10
-        retry_delay = 0.5
+        retry_delay = 0.1
         result = None
         error = None
         db_conn = None
@@ -483,7 +517,7 @@ class SimpleCache(object):
                         return result
                     except sqlite3.OperationalError as op_error:
                         if "database is locked" in str(op_error).lower():
-                            self._log_msg("retrying DB commit...", xbmc.LOGDEBUG)
+                            self._log_msg("retrying DB commit...", xbmc.LOGINFO)
                             retries += 1
                             if hasattr(self, '_monitor') and self._monitor is not None:
                                 self._monitor.waitForAbort(retry_delay)

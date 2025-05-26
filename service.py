@@ -204,7 +204,7 @@ def update_cache_info_setting():
             SET_SETTING("cache_info_display", display_text)
             return
 
-        logger(f"Checking cache info for path: {TEMP_DIR}", xbmc.LOGDEBUG)
+        logger(f"Checking cache info for path: {TEMP_DIR}", xbmc.LOGINFO)
 
         total_size_bytes = _get_dir_size(TEMP_DIR)
         size_mb = total_size_bytes / (1024.0 * 1024.0)
@@ -226,18 +226,16 @@ def update_cache_info_setting():
 
     try:
         SET_SETTING("cache_info_display", display_text)
-        logger("Cache info setting updated.", xbmc.LOGDEBUG)
+        logger("Cache info setting updated.", xbmc.LOGINFO)
     except Exception as set_e:
         logger(f"Failed to update cache_info_display setting: {set_e}", xbmc.LOGERROR)
+
 
 check_and_set_paths_in_settings()
 
 base_plugin_url = ""
-plugin_handle = -1
-
 try:
     base_plugin_url = sys_argv[0]
-    plugin_handle = int(sys_argv[1])
 except (IndexError, ValueError):
     pass
 
@@ -359,7 +357,7 @@ def normalize_string(input_string, transliterate_cyrillic=True):
     SPECIAL_REPLACEMENTS, and optionally transliterates Cyrillic to generic Latin
     according to GENERIC_CYRILLIC_TO_LATIN_MAP.
     """
-    logger(f"normalize_string input: {str(input_string)[:100]}{'...' if len(str(input_string)) > 100 else ''}", level=xbmc.LOGDEBUG)
+    logger(f"normalize_string input: {str(input_string)[:100]}{'...' if len(str(input_string)) > 100 else ''}", level=xbmc.LOGINFO)
 
     if not isinstance(input_string, str):
         try:
@@ -389,7 +387,7 @@ def normalize_string(input_string, transliterate_cyrillic=True):
 
     output_string = "".join(result_chars)
 
-    logger(f"normalize_string output: {output_string[:100]}{'...' if len(output_string) > 100 else ''}", level=xbmc.LOGDEBUG)
+    logger(f"normalize_string output: {output_string[:100]}{'...' if len(output_string) > 100 else ''}", level=xbmc.LOGINFO)
 
     return output_string
 
@@ -551,7 +549,7 @@ def parse_season_episode(input_string):
     """
     Parses season and episode numbers from an input string.
 
-    Supports various formats like S01E03, 1x03, Season 1 Episode 3, etc.
+    Supports various formats for Season and Episode.
     If found, the season and episode numbers are returned as integers,
     and the matched pattern is removed from the original string.
 
@@ -561,8 +559,8 @@ def parse_season_episode(input_string):
     Returns:
         tuple: A three-tuple containing:
             - str: The modified string with the pattern removed (or original if not found/error).
-            - int or None: The detected season number (0-1000).
-            - int or None: The detected episode number (0-100).
+            - int or None: The detected season number (0-2050).
+            - int or None: The detected episode number (0-999).
     """
     logger(f"parse_season_episode called with input: '{input_string}'")
 
@@ -570,50 +568,60 @@ def parse_season_episode(input_string):
         logger("Input string is empty or None.")
         return input_string, None, None
 
-    # Groups: (1, 2) for SxxExx, (3, 4) for xxXxx, (5, 6) for Season xx Episode xx
-    pattern = re.compile(
-        r"(?:[sS](\d{1,4})[\s\.]?[eE](\d{1,3}|-[123]))|"
-        r"(?:(\d{1,4})[xX](\d{1,3}))|"
-        r"(?:(?:season|Season|SEASON)\s*\.?\s*(\d{1,4})\s*\.?\s*(?:episode|Episode|EPISODE)\s*\.?\s*(\d{1,3}))",
-        flags=re.IGNORECASE
-    )
+    patterns = [
+        # S01E03, S01 E03, S01.E03, S1E3, s1e03
+        r"[sS](\d{1,4})[\s\._x]?[eE](\d{1,3}|-[123])",
+        # 1x03, 01x03, 1X3
+        r"(\d{1,4})[xX](\d{1,3})",
+        # Season 1 Episode 3 (case-insensitive)
+        r"(?:season|sezona)\s*[\._]?\s*(\d{1,4})\s*[\._]?\s*(?:episode|epizoda|ep|ep\.)\s*[\._]?\s*(\d{1,3})",
+        # S01, Season 01
+        r"(?:^|[ ._])((?:[sS]\d{2,4})|(?:season|sezona)[ ._]?\d{1,4})(?=$|[ ._])",
+        # E03, Ep 03, Ep.03, Episode 03, Part 2, Pt.2
+        r"(?:^|[ ._])((?:[eE]\d{2,3})|(?:[eE][pP]|episode|epizoda|part|pt)[ ._]?\d{1,3})(?=$|[ ._])"
 
-    match = pattern.search(input_string)
+    ]
 
-    if not match:
-        logger("No season or episode pattern found in input string.")
-        return input_string, None, None
+    for idx, pat in enumerate(patterns):
+        pattern = re.compile(pat, flags=re.IGNORECASE)
+        match = pattern.search(input_string)
+        if not match:
+            continue
 
-    try:
-        if match.group(1) and match.group(2):
-            season = int(match.group(1))
-            episode = int(match.group(2))
-        elif match.group(3) and match.group(4):
-            season = int(match.group(3))
-            episode = int(match.group(4))
-        elif match.group(5) and match.group(6):
-            season = int(match.group(5))
-            episode = int(match.group(6))
-        else:
-            logger("Pattern matched but no valid groups found (unexpected).", xbmc.LOGWARNING)
-            return input_string, None, None
+        try:
+            g = match.groups()
+            season, episode = None, None
 
-        if not (0 <= season <= 100 and 0 <= episode <= 100):
-            logger(f"Season ({season}) or Episode ({episode}) out of range [0-100].", xbmc.LOGWARNING)
-            return input_string, None, None
+            if idx in (0, 1, 2):
+                season = int(g[0]) if len(g) > 0 and g[0] is not None else None
+                episode = int(g[1]) if len(g) > 1 and g[1] is not None else None
+            elif idx == 3:
+                digits = re.search(r"\d+", g[0]) if g[0] else None
+                season = int(digits.group()) if digits else None
+                episode = None
+            elif idx == 4:
+                digits = re.search(r"\d+", g[0]) if g[0] else None
+                season = None
+                episode = int(digits.group()) if digits else None
+            else:
+                continue
 
-    except (ValueError, IndexError) as e:
-        logger(f"Error parsing season/episode numbers from match '{match.group()}': {e}", xbmc.LOGERROR)
-        return input_string, None, None
+            if not (0 <= (season if season is not None else 0) <= 2050 and 0 <= (episode if episode is not None else 0) <= 999):
+                logger(f"Season ({season}) or Episode ({episode}) out of range.", xbmc.LOGWARNING)
+                continue
 
-    start, end = match.span()
-    modified_string = input_string[:start] + input_string[end:]
-    modified_string = modified_string.strip()
+        except (ValueError, IndexError) as e:
+            logger(f"Error parsing season/episode numbers from match '{match.group()}': {e}", xbmc.LOGERROR)
+            continue
 
-    logger(f"Pattern found: '{match.group()}', Season: {season}, Episode: {episode}")
-    logger(f"Modified string after removing pattern: '{modified_string}'")
+        start, end = match.span()
+        modified_string = input_string[:start] + input_string[end:]
+        modified_string = modified_string.strip()
+        logger(f"Pattern found: '{match.group()}', Season: {season}, Episode: {episode}")
+        return modified_string, season, episode
 
-    return modified_string, season, episode
+    logger("No season or episode pattern found in input string.")
+    return input_string, None, None
 
 
 def get_imdb_id():
@@ -698,6 +706,60 @@ def get_imdb_id():
     return None  
 
 
+def smart_clean_title(input_string):
+    """
+    Wrapper around xbmc.getCleanMovieTitle, providing enhanced cleaning of the title and extraction of the year.
+    Uses parse_season_episode as a sub-function to detect and extract season and episode numbers.
+    If a season/episode pattern is found, everything after it is removed from the title.
+    Returns a tuple: (title, year, season, episode).
+    """
+    if not input_string or not isinstance(input_string, str):
+        return "", None, None, None
+
+    try:
+        clean_title, year_str = xbmc.getCleanMovieTitle(input_string)
+        title = clean_title.strip()
+    except Exception:
+        title = input_string.strip()
+        year_str = None
+
+    year = None
+    if year_str and year_str.isdigit() and 1900 <= int(year_str) <= 2100:
+        try:
+            year = int(year_str) 
+        except Exception as e:
+            logger(f"Year string '{year_str}' could not be converted to int: {e}", xbmc.LOGWARNING)
+    #else:
+    #    year_search = re.search(r"(19|20)\d{2}", input_string)
+    #    if year_search:
+    #        year = int(year_search.group(0))
+
+    try:
+        parsed_title, season, episode = parse_season_episode(title)
+        if season is not None or episode is not None:
+            cut_idx = 0
+            for c1, c2 in zip(title, parsed_title):
+                if c1 != c2:
+                    break
+                cut_idx += 1
+            title = title[:cut_idx].strip()
+    except Exception as e:
+        logger(f"Error parsing season/episode from string '{title}': {e}", xbmc.LOGWARNING)
+        season, episode = None, None
+
+    clean_regexes = [
+        r"\[.*?\]|\{.*?\}",
+        r"[\._]"
+    ]
+
+    for reg in clean_regexes:
+        title = re.sub(reg, " ", title)
+
+    title = re.sub(r"\s+", " ", title, flags=re.IGNORECASE).strip()
+
+    return title, year, season, episode
+    
+    
 
 class ActionHandler(object):
 
@@ -790,7 +852,7 @@ class ActionHandler(object):
                 message = GET_STRING(32021).format(self.username)
                 dialog = xbmcgui.Dialog()
                 dialog.ok(GET_STRING(32022), message)
-                logger("API verification dialog shown to user.", xbmc.LOGDEBUG)
+                logger("API verification dialog shown to user.", xbmc.LOGINFO)
             else:
                 logger(f"HTTP error: {str(e)}", xbmc.LOGERROR)
                 show_notification(GET_STRING(32006))
@@ -818,7 +880,7 @@ class ActionHandler(object):
                 credentials_string = f"{self.username}:{self.password}"
                 credentials_hash = hashlib.sha256(credentials_string.encode("utf-8")).hexdigest()
                 login_data["CredentialsHash"] = credentials_hash
-                logger("Credentials hash calculated and added to login data", xbmc.LOGDEBUG)
+                logger("Credentials hash calculated and added to login data", xbmc.LOGINFO)
             except Exception as hash_e:
                 logger(f"Failed to calculate credentials hash: {hash_e}", xbmc.LOGWARNING)
                 login_data.pop("CredentialsHash", None)
@@ -833,7 +895,7 @@ class ActionHandler(object):
             )
             self.login_token = login_data.get("Token")
             self.user_id = login_data.get("UserId")
-            logger("Login data successfully set in cache and instance", xbmc.LOGDEBUG)
+            logger("Login data successfully set in cache and instance", xbmc.LOGINFO)
             return True
         except Exception as e:
             logger(f"Error saving login data to cache: {e}", xbmc.LOGERROR)
@@ -862,7 +924,7 @@ class ActionHandler(object):
             logger("No valid cached login data found, attempting fresh login.")
             return self._perform_fresh_login()
 
-        logger("Cached login data found. Validating...", xbmc.LOGDEBUG)
+        logger("Cached login data found. Validating...", xbmc.LOGINFO)
 
         try:
             try:
@@ -882,7 +944,7 @@ class ActionHandler(object):
                 logger("Credentials changed since last login. Cache invalid.", xbmc.LOGWARNING)
                 return self._perform_fresh_login()
 
-            logger("Credentials hash match. Validating structure and expiration...", xbmc.LOGDEBUG)
+            logger("Credentials hash match. Validating structure and expiration...", xbmc.LOGINFO)
 
             required_keys = {"Token", "UserId", "ExpirationDate", "UserName"}
             if not all(key in titlovi_com_login_data for key in required_keys):
@@ -896,6 +958,15 @@ class ActionHandler(object):
                 return self._perform_fresh_login()
 
             try:
+                iso_match = re.match(r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d+))?$", expiration_date_string)
+                if iso_match:
+                    main, frac = iso_match.group(1), iso_match.group(2)
+                    if frac:
+                        frac = (frac + "000000")[:6]
+                        expiration_date_string = f"{main}.{frac}"
+                    else:
+                        expiration_date_string = main
+
                 expiration_date = datetime.fromisoformat(expiration_date_string)
                 time_left = expiration_date - datetime.now()
 
@@ -949,7 +1020,7 @@ class ActionHandler(object):
             use_custom_settings = GET_BOOL_SETTING("override_kodi_languages")
 
             if use_custom_settings:
-                logger("Using custom language settings from addon.", xbmc.LOGDEBUG)
+                logger("Using custom language settings from addon.", xbmc.LOGINFO)
                 setting_to_lang_key = {
                     "lang_eng": "English",
                     "lang_srp_lat": "Serbian",
@@ -964,7 +1035,7 @@ class ActionHandler(object):
                 for setting_id, lang_key in setting_to_lang_key.items():
                     if GET_BOOL_SETTING(setting_id):
                         selected_custom_langs.append(lang_key)
-                        logger(f"Custom language selected: {lang_key} (from setting {setting_id})", xbmc.LOGDEBUG)
+                        logger(f"Custom language selected: {lang_key} (from setting {setting_id})", xbmc.LOGINFO)
 
                 for lang_key in selected_custom_langs:
                     site_name = LANGUAGES.get(lang_key, {}).get("site_name")
@@ -974,7 +1045,7 @@ class ActionHandler(object):
                         logger(f"Could not find 'site_name' for custom language key '{lang_key}' in LANGUAGES map.", xbmc.LOGWARNING)
 
             else:
-                logger("Using language settings provided by Kodi.", xbmc.LOGDEBUG)
+                logger("Using language settings provided by Kodi.", xbmc.LOGINFO)
                 if not self.params.get("languages") or not self.params["languages"][0]:
                     logger("No Kodi languages found in params.", level=xbmc.LOGWARNING)
                     return ""
@@ -1025,7 +1096,7 @@ class ActionHandler(object):
         elif self.action == "download":
             self.handle_download_action()
         else:
-            logger("Invalid action!")
+            logger("Invalid action!", xbmc.LOGWARNING)
             show_notification(GET_STRING(32003))
 
 
@@ -1033,245 +1104,272 @@ class ActionHandler(object):
         """
         Method used for searching
         """
+        plugin_handle = int(sys_argv[1])
         logger("Starting search action...")
         search_params = {}
         search_params["returnStatusCode"] = True
         search_params["ignoreLangAndEpisode"] = False
         
+        imdb_id = None
+        year = None
+        season = None
+        episode = None
+        year_temp = None
+        season_temp = None
+        episode_temp = None
+        title = None
+        title_source = None
+        filename = None
+        
         if self.action == "manualsearch":
             logger("Starting manualsearch.")
             search_string_list = self.params.get("searchstring")
             
-            if not search_string_list:
+            if isinstance(search_string_list, str):
+                search_string_list = [search_string_list]
+                
+            if not search_string_list or not search_string_list[0].strip():
                 show_notification(GET_STRING(32008))
                 return
 
             search_string = search_string_list[0].strip()
-            
-            if not search_string:
-                show_notification(GET_STRING(32008))
-                return
-            
-            imdb_id_match = re.match(r"^(tt\d+)$", search_string, re.IGNORECASE)
+
+            imdb_id_match = re.search(r"(tt\d+)", search_string, re.IGNORECASE)
             
             if imdb_id_match:
                 imdb_id = imdb_id_match.group(1)
-                logger(f"Detected IMDb ID in manual search: {imdb_id}", xbmc.LOGDEBUG)
+                logger(f"Detected IMDb ID in manual search: {imdb_id}", xbmc.LOGINFO)
                 search_params["imdbid"] = imdb_id
+                search_string = search_string.replace(imdb_id, "").strip()
             
-            logger(f"Manual search string: '{search_string}'")
-
             try:
-                parsed_title, season, episode = parse_season_episode(search_string)
-                logger(f"Parsed Manual Search -> Title: '{parsed_title}', S: {season}, E: {episode}", xbmc.LOGDEBUG)
-                title_to_clean = parsed_title
-            except Exception as parse_e:
-                logger(f"Error parsing season/episode from manual search string: {parse_e}", xbmc.LOGWARNING)
+                clean_title_temp, year, season, episode = smart_clean_title(search_string)
+                logger(f"Manual search string ('{search_string}') -> (title: '{clean_title_temp}', year: {year}, S: {season}, E: {episode})", xbmc.LOGINFO)
+                title = clean_title_temp.strip()
+            except Exception as clean_e:
+                logger(f"Error cleaning title '{search_string}': {clean_e}. Using as is.", xbmc.LOGWARNING)
+                title = search_string.strip()
+                year = None
                 season = None
                 episode = None
-                title_to_clean = search_string
 
-            if season is not None:
-                search_params["season"] = season
-            if episode is not None:
-                search_params["episode"] = episode
-            
-            year = None
-            clean_title = title_to_clean
-            try:       
-                clean_title_temp, year_str = xbmc.getCleanMovieTitle(title_to_clean)
-                clean_title = clean_title_temp
-                if year_str:
-                    try:
-                        year = int(year_str)
-                        logger(f"Extracted Year: {year}", xbmc.LOGDEBUG)
-                    except ValueError:
-                        logger(f"Could not convert extracted year '{year_str}' to integer.", xbmc.LOGWARNING)
-                        year = None  
-            except Exception as clean_e:
-                logger(f"Error cleaning title '{title_to_clean}': {clean_e}. Using as is.", xbmc.LOGWARNING)
-                
-            search_params["query"] = clean_title.strip()
+            search_params["query"] = title
             if year:
                 search_params["year"] = year
-                
-            logger(f"Prepared search_params from manual input: {search_params}")
+            if season is not None and season >= 0:
+                season_list = ["0", str(season)]
+                season_list = list(dict.fromkeys(season_list))
+                search_params["season"] = season_list
+            if episode is not None and episode >= 0:
+                episode_list = ["-1", "0", str(episode)]
+                episode_list = list(dict.fromkeys(episode_list))
+                search_params["episode"] = episode_list
+
+            logger(f"Manual search finalized with search_params: {search_params}", xbmc.LOGINFO)
 
         else:
             logger("Handling automatic search.")
             player = xbmc.Player()
-            
-            imdb_id = None
-            query = None
-            year = None
-            season = None
-            episode = None
-            title = None
-            title_source = None
-            filename = None
 
             if not player.isPlayingVideo():
-                logger("Video is not playing. Attempting to get IMDb ID only...")
+                logger("Video is not playing. Attempting to get IMDb ID and fallback title...")
                 try:
                     imdb_id = get_imdb_id()
                     if imdb_id:
                         logger(f"Found IMDb ID (while player not active): {imdb_id}")
                         search_params["imdbid"] = imdb_id
                         
-                        season_str = xbmc.getInfoLabel("ListItem.Season")
-                        episode_str = xbmc.getInfoLabel("ListItem.Episode")
+                    season_str = xbmc.getInfoLabel("ListItem.Season")
+                    episode_str = xbmc.getInfoLabel("ListItem.Episode")
+                    year_str = xbmc.getInfoLabel("ListItem.Year")
 
-                        try:
-                            if season_str:
-                                season = int(season_str)
-                        except:
-                            season = None
-                        try:
-                            if episode_str:
-                                episode = int(episode_str)
-                        except:
-                            episode = None
-                    
-                        if season is not None and season >= 0:
-                            search_params["season"] = ["0", str(season)]
+                    try:
+                        season = int(season_str.strip()) if season_str else None
+                    except Exception:
+                        season = None
 
-                        if episode is not None and episode >= 0:
-                            search_params["episode"] = ["", "0", str(season)]
+                    try:
+                        episode = int(episode_str.strip()) if episode_str else None
+                    except Exception:
+                        episode = None
 
+                    base_title = (
+                        xbmc.getInfoLabel("ListItem.TVShowTitle") or
+                        xbmc.getInfoLabel("ListItem.OriginalTitle") or
+                        xbmc.getInfoLabel("ListItem.Title") or
+                        xbmc.getInfoLabel("ListItem.Label")
+                    )
+                    if base_title:
+                        logger(f"Fallback title (player not active) found in InfoLabels: '{base_title}'", xbmc.LOGINFO)
+                        clean_title_temp, year_temp, season_temp, episode_temp = smart_clean_title(base_title)
+                        title = normalize_string(clean_title_temp.strip())
+                        search_params["query"] = title
+                        
+                        if season is None and season_temp is not None:
+                            season = season_temp
+                        if episode is None and episode_temp is not None:
+                            episode = episode_temp
+
+                        year = year_str or (str(year_temp) if year_temp else None)
+                        if year:
+                            try:
+                                if GET_BOOL_SETTING("include_year_in_search"):
+                                    year = int(year.strip())
+                                    search_params["year"] = year
+                                    logger(f"Including year '{year}' in search params based on setting (player not active).", xbmc.LOGINFO)
+                            except Exception as setting_e:
+                                logger(f"Error reading or setting year: {setting_e}", xbmc.LOGWARNING)
                     else:
-                        logger("Could not find IMDb ID (while player not active).")
+                        logger("No fallback title found in ListItem InfoLabels (player not active).")
+                        
+                    if season is not None and season >= 0:
+                        season_list = ["0", str(season)]
+                        season_list = list(dict.fromkeys(season_list))
+                        search_params["season"] = season_list
+
+                    if episode is not None and episode >= 0:
+                        episode_list = ["-1", "0", str(episode)]
+                        episode_list = list(dict.fromkeys(episode_list))
+                        search_params["episode"] = episode_list
+                    
+                    if (season is not None and season >= 0) or (episode is not None and episode >= 0):
+                        logger(f"Found Season: {season}, Episode: {episode} (while player not active)")
+
+                    if not imdb_id and not base_title:
+                        logger("Could not find IMDb ID or Title (while player not active).", xbmc.LOGWARNING)
+                        return
                 except Exception as e:
-                    logger(f"Error calling get_imdb_id() while player not active: {e}", xbmc.LOGWARNING)
+                    logger(f"Error while gathering fallback info when player not active: {e}", xbmc.LOGWARNING)
 
             else:
                 logger("Video is playing. Gathering information from player...")
 
                 try:
-                    logger("Attempting to get IMDb ID (player active)...", xbmc.LOGDEBUG)
+                    logger("Attempting to get IMDb ID (player active)...", xbmc.LOGINFO)
                     imdb_id = get_imdb_id()
+                    use_imdb = True
+                    try:
+                        use_imdb = GET_BOOL_SETTING("include_imdb_id_in_search")
+                    except Exception as setting_e:
+                        logger(f"Error reading 'include_imdb_id_in_search' setting: {setting_e}. Defaulting to True.", xbmc.LOGWARNING)
                     if imdb_id:
-                        try:
-                            use_imdb = GET_BOOL_SETTING("include_imdb_id_in_search")
-                        except Exception as setting_e:
-                            logger(f"Error reading 'include_imdb_id_in_search' setting: {setting_e}. Assuming default (True).", xbmc.LOGWARNING)
-                            use_imdb = True
                         if use_imdb:
-                            logger(f"Found valid IMDb ID (while player is active) and setting is enabled: {imdb_id}")
+                            logger(f"Found valid IMDb ID (player active): {imdb_id} (will be used)")
                             search_params["imdbid"] = imdb_id
                         else:
-                            logger(f"Found IMDb ID ({imdb_id}), but prioritizing title/year/S-E based on setting.", xbmc.LOGDEBUG)
+                            logger(f"IMDb ID found ({imdb_id}), but setting disables its use, and prioritizing title/year/S-E.", xbmc.LOGINFO)
                     else:
-                        logger("No valid IMDb ID found (player active). Proceeding with title/filename.", xbmc.LOGDEBUG)
+                        logger("No valid IMDb ID found (player active). Proceeding with title/filename.", xbmc.LOGINFO)
                 except Exception as e:
                     logger(f"Error calling get_imdb_id() (player active): {e}", xbmc.LOGWARNING)
 
+                tv_show_title = xbmc.getInfoLabel("VideoPlayer.TVshowtitle")
+                movie_title = xbmc.getInfoLabel("VideoPlayer.OriginalTitle") or xbmc.getInfoLabel("VideoPlayer.Title")
                 season_str = xbmc.getInfoLabel("VideoPlayer.Season")
                 episode_str = xbmc.getInfoLabel("VideoPlayer.Episode")
-                tv_show_title = xbmc.getInfoLabel("VideoPlayer.TVshowtitle")
-                year_str_player = xbmc.getInfoLabel("VideoPlayer.Year")
+                year_str = xbmc.getInfoLabel("VideoPlayer.Year")
+                found_season_episode = False
+
+                try:
+                    playing_file = player.getPlayingFile()
+                except Exception:
+                    playing_file = None
+                if playing_file:
+                    filename = os.path.basename(xbmcvfs.translatePath(playing_file))
+                else:
+                    filename = (
+                        os.path.basename(xbmcvfs.translatePath(xbmc.getInfoLabel("ListItem.DecodedFileNameAndPath"))) or
+                        xbmc.getInfoLabel("ListItem.FileNameNoExtension") or
+                        xbmc.getInfoLabel("ListItem.Filename") or
+                        xbmc.getInfoLabel("ListItem.Path")
+                    )
 
                 if tv_show_title:
-                    title = tv_show_title
+                    clean_title_temp, year_temp, season_temp, episode_temp = smart_clean_title(tv_show_title)
+                    title = clean_title_temp.strip()
                     title_source = "tvshowtitle"
-                    logger(f"Source: TVShowTitle ('{title}')", xbmc.LOGDEBUG)
-                    
-                else:
-                    movie_title = xbmc.getInfoLabel("VideoPlayer.OriginalTitle") or xbmc.getInfoLabel("VideoPlayer.Title")
-                    if movie_title:
-                        title = movie_title
-                        title_source = "movietitle"
-                        logger(f"Source: MovieTitle ('{title}')", xbmc.LOGDEBUG)
 
-                clean_title = None
-                year_str_clean = None
-                
+                    if season_temp is not None or episode_temp is not None:
+                        found_season_episode = True
+                        logger(f"Source: TVShowTitle with S/E ('{tv_show_title}'), cleaned: '{title}'", xbmc.LOGINFO)
+                    else:
+                        logger(f"Source: TVShowTitle ('{tv_show_title}')", xbmc.LOGINFO)
+
+                elif movie_title:
+                    clean_title_temp, year_temp, season_temp, episode_temp = smart_clean_title(movie_title)
+                    title = clean_title_temp.strip()
+                    title_source = "movietitle"
+
+                    if season_temp is not None or episode_temp is not None:
+                        found_season_episode = True
+                        logger(f"Source: MovieTitle with S/E ('{movie_title}'), cleaned: '{title}'", xbmc.LOGINFO)
+                    else:
+                        logger(f"Source: MovieTitle ('{movie_title}')", xbmc.LOGINFO)
+
+                elif filename:
+                    clean_title_temp, year_temp, season_temp, episode_temp = smart_clean_title(filename)
+                    title = clean_title_temp.strip()
+                    title_source = "filename"
+
+                    if season_temp is not None or episode_temp is not None:
+                        found_season_episode = True
+                        logger(f"Source: Filename with S/E detected in fallback ('{filename}'), cleaned: '{title}'", xbmc.LOGINFO)
+                    else:
+                        logger(f"Source: Filename fallback ('{filename}')", xbmc.LOGINFO)
+
+                else:
+                    logger("Could not determine title from TVShowTitle, MovieTitle or Filename!", xbmc.LOGERROR)
+
                 if title:
                     try:
-                        clean_title_temp, year_str_temp = xbmc.getCleanMovieTitle(title)
-                        clean_title = clean_title_temp.strip()
-                        if year_str_temp:
-                            year_str_clean = year_str_temp
-                    except Exception as clean_e:
-                        logger(f"Error cleaning title from InfoLabel '{title}': {clean_e}. Using raw for normalize.", xbmc.LOGWARNING)
-                        clean_title = title.strip()
-                
-                if clean_title is None:
-                    logger("No title from InfoLabels. Falling back to filename...", xbmc.LOGDEBUG)
-                    try:
-                        playing_file = player.getPlayingFile()
-                        if playing_file:
-                            filename = os.path.basename(xbmcvfs.translatePath(playing_file))
-                            title_source = "filename"
-                            logger(f"Source: Filename ('{filename}')", xbmc.LOGDEBUG)
-                            year_str_clean = None
-                            try:
-                                clean_title_temp, year_str_temp = xbmc.getCleanMovieTitle(filename)
-                                clean_title = clean_title_temp.strip()
-                                if year_str_temp:
-                                    year_str_clean = year_str_temp
-                            except Exception as clean_f_e:
-                                logger(f"Error cleaning filename '{filename}': {clean_f_e}. Using raw filename.", xbmc.LOGWARNING)
-                                clean_title = filename.strip()
-                        else:
-                            logger("Could not get playing filename.", xbmc.LOGWARNING)
-                    except Exception as e:
-                        logger(f"Error processing filename: {e}", xbmc.LOGERROR)
-                
-                if clean_title:
-                    try:
-                        query = normalize_string(clean_title)
-                        logger(f"Normalized query: '{query}'", xbmc.LOGDEBUG)
-                        search_params["query"] = query
+                        title = normalize_string(title)
                     except Exception as norm_e:
-                        logger(f"Error normalizing title '{clean_title}': {norm_e}. Using unnormalized.", xbmc.LOGWARNING)
-                        search_params["query"] = clean_title
+                        logger(f"Error normalizing title '{title}': {norm_e}. Using unnormalized.", xbmc.LOGWARNING)
+                    logger(f"Normalized query: '{title}'", xbmc.LOGINFO)
+                    search_params["query"] = title
                 else:
                     logger("Query could not be determined.", xbmc.LOGWARNING)
-                
-                year_str = year_str_player or year_str_clean
-                if year_str:
-                    try:
-                        year = int(year_str)
-                    except:
-                        year = None
-                
-                try:
-                    if season_str:
-                        season = int(season_str)
-                except:
-                    season = None
-                try:
-                    if episode_str:
-                        episode = int(episode_str)
-                except:
-                    episode = None
-                
-                if (season is None or episode is None) and title_source != "movietitle":
-                    string_to_parse_se = None
-                    if title_source == "tvshowtitle":
-                        string_to_parse_se = tv_show_title
-                    elif title_source == "filename":
-                        string_to_parse_se = filename
 
-                    if string_to_parse_se:
-                        logger(f"Attempting S/E parsing on source '{title_source}' as fallback.", xbmc.LOGDEBUG)
-                        try:
-                            _, season_parsed, episode_parsed = parse_season_episode(string_to_parse_se)
-                            if season is None and season_parsed is not None:
-                                season = season_parsed
-                            if episode is None and episode_parsed is not None:
-                                episode = episode_parsed
-                        except Exception as parse_e:
-                            logger(f"Error parsing S/E from '{title_source}': {parse_e}", xbmc.LOGWARNING)
-                             
+                year = year_str or (str(year_temp) if year_temp else None)
+                try:
+                    year = int(year.strip()) if year else None
+                except Exception:
+                    year = None
+                
+                try:
+                    season = int(season_str.strip()) if season_str else None
+                except Exception:
+                    season = None
+     
+                try:
+                    episode = int(episode_str.strip()) if episode_str else None
+                except Exception:
+                    episode = None
+
+                if season is None and season_temp is not None:
+                    season = season_temp
+                if episode is None and episode_temp is not None:
+                    episode = episode_temp
+                    
+                if title_source == "tvshowtitle" and (season is None or episode is None) and filename:
+                    _, _, season_from_file, episode_from_file = smart_clean_title(filename)
+                    if season is None and season_from_file is not None:
+                        season = season_from_file
+                        logger(f"Fallback: Season extracted from filename: {season}", xbmc.LOGINFO)
+                    if episode is None and episode_from_file is not None:
+                        episode = episode_from_file
+                        logger(f"Fallback: Episode extracted from filename: {episode}", xbmc.LOGINFO)
+
                 if title_source == "tvshowtitle" or (season is not None and season >= 0) or (episode is not None and episode >= 0):
                     if season is not None and season >= 0:
-                        search_params["season"] = ["0", str(season)]
-                        logger(f"Adding final season params: {search_params['season']}", xbmc.LOGDEBUG)
+                        season_list = ["0", str(season)]
+                        season_list = list(dict.fromkeys(season_list))
+                        search_params["season"] = season_list
+                        logger(f"Season found: {season} -> Adding season params: {search_params['season']}", xbmc.LOGINFO)
 
                     episode_list = []
                     if episode is not None and episode >= 0:
-                        episode_list.extend(["",  "0", str(episode)])
+                        episode_list = ["-1", "0", str(episode)]
                         try:
                             if GET_BOOL_SETTING("include_pilot_episodes"):
                                 episode_list.append("-2")
@@ -1282,29 +1380,46 @@ class ActionHandler(object):
                                 episode_list.append("-3")
                         except Exception:
                             pass
+                        episode_list = sorted(list(dict.fromkeys(episode_list)))
                     if episode_list:
-                        search_params["episode"] = sorted(list(set(episode_list)))
-                        logger(f"Adding final episode params: {search_params['episode']}", xbmc.LOGDEBUG)
-                                   
-                if title_source == "tvshowtitle" or (season is not None and season >= 0) or (episode is not None and episode >= 0):
-                    # search_params["special"] = "-1"
-                    search_params["type"] = "2"
-                    logger("Setting search type to '2' (TV Show).", xbmc.LOGDEBUG)
-                elif title_source == "movietitle" or title_source == "filename":
-                    search_params["type"] = ["1", "3"]
-                    logger("Setting search type to '['1', '3']' (Movie/Documentaries).", xbmc.LOGDEBUG)
+                        search_params["episode"] = episode_list
+                        logger(f"Episode found: {episode} -> Adding episode params: {search_params['episode']}", xbmc.LOGINFO)
+
+                try:
+                    use_type_switch = GET_BOOL_SETTING("include_type_in_search")
+                except Exception as setting_e:
+                    logger(f"Error reading 'include_type_in_search' setting: {setting_e}. Assuming default (True).", xbmc.LOGWARNING)
+                    use_type_switch = True
+
+                is_tv_show = (
+                    title_source == "tvshowtitle" or
+                    found_season_episode or
+                    (season is not None and season >= 0) or
+                    (episode is not None and episode >= 0)
+                )
+
+                if use_type_switch:
+                    if is_tv_show:
+                        search_params["type"] = "2"
+                        logger("Setting search type to '2' (TV Show).", xbmc.LOGINFO)
+                    elif title_source in ("movietitle", "filename"):
+                        search_params["type"] = ["1", "3"]
+                        logger("Setting search type to '['1', '3']' (Movie/Documentaries).", xbmc.LOGINFO)
+                    else:
+                        logger("Title source unknown, not setting search type.", xbmc.LOGINFO)
                 else:
-                    logger("Title source unknown, not setting search type.", xbmc.LOGDEBUG)
-                                   
+                    logger("Type setting is disabled by user settings.", xbmc.LOGINFO)
+
                 try:
                     if GET_BOOL_SETTING("include_year_in_search") and year is not None:
                         search_params["year"] = year
-                        logger(f"Including final year {year} in search params based on setting.", xbmc.LOGDEBUG)
+                        logger(f"Including final year '{year}' in search params based on setting.", xbmc.LOGINFO)
                 except Exception as setting_e:
                     logger(f"Error reading 'include_year_in_search' setting: {setting_e}", xbmc.LOGWARNING)
                              
+                # search_params["special"] = "-1"
                 
-            if not search_params.get('imdbid') and not search_params.get('query'):
+            if not search_params.get("imdbid") and not search_params.get("query"):
                 logger("Automatic search failed: Could not determine usable search parameters (IMDb or Query needed).", xbmc.LOGERROR)
                 return
                 
@@ -1318,8 +1433,10 @@ class ActionHandler(object):
 
         if result_list is None:
             logger("Search failed or was aborted (e.g., timeout, login error). No results to display.", xbmc.LOGWARNING)
+            xbmcplugin.endOfDirectory(plugin_handle)
         elif not result_list:
-            logger("No subtitle results found for the current search criteria.", xbmc.LOGINFO)
+            logger("No subtitle results found for the current search criteria, and nothing were displayed in the Kodi dialog!.")
+            xbmcplugin.endOfDirectory(plugin_handle)
         else:
             self._display_search_results(result_list)
 
@@ -1340,7 +1457,7 @@ class ActionHandler(object):
             
         if self.user_id:
             cache_key_params["__user_id__"] = self.user_id
-            logger(f"Adding user ID {self.user_id} to cache key params.", xbmc.LOGDEBUG)
+            logger(f"Adding user ID {self.user_id} to cache key params.", xbmc.LOGINFO)
         else:
             logger("User ID not available, cache key will not be user-specific.", xbmc.LOGWARNING)
 
@@ -1350,7 +1467,7 @@ class ActionHandler(object):
                 sorted_items = sorted(cache_key_params.items())
                 params_hash = json.dumps(sorted_items, sort_keys=True, separators=(",", ":"))
                 params_hash = hashlib.sha1(params_hash.encode("utf-8")).hexdigest()
-                logger(f"Cache key generated: {params_hash}", xbmc.LOGDEBUG)
+                logger(f"Cache key generated: {params_hash}", xbmc.LOGINFO)
             except Exception as json_e:
                 logger(f"Error creating cache key: {json_e}. Caching disabled for this request.", xbmc.LOGERROR)
                 params_hash = None
@@ -1383,12 +1500,12 @@ class ActionHandler(object):
             search_params["json"] = True
 
             try:
-                logger(f"API Search Params: {search_params}", xbmc.LOGDEBUG)
+                logger(f"API Search Params: {search_params}", xbmc.LOGINFO)
                 connect_timeout = int(GET_SETTING("request_timeout") or 10)
                 read_timeout = 20
                 response = requests.get(f"{API_BASE_URL}/search", params=search_params, timeout=(connect_timeout, read_timeout))
                 logger(f"API Response Status: {response.status_code}")
-                logger(f"API URL Queried: {response.url}", xbmc.LOGDEBUG)
+                logger(f"API URL Queried: {response.url}", xbmc.LOGINFO)
                 
                 response.raise_for_status()
                 resp_json = response.json()
@@ -1468,8 +1585,12 @@ class ActionHandler(object):
                         date_val = item.get("Date")
                         if isinstance(date_val, datetime):
                             item["Date"] = date_val.isoformat()
-                        elif not isinstance(date_val, str):
+                        elif isinstance(date_val, str):
+                            item["Date"] = date_val
+                        elif date_val is not None:
                             item["Date"] = str(date_val)
+                        else:
+                            item["Date"] = ""
                     addon_cache.set(params_hash, result_list, expiration=SEARCH_CACHE_EXPIRATION)
                     logger(f"Stored {len(result_list)} results in cache.")
                 except Exception as cache_set_e:
@@ -1485,6 +1606,7 @@ class ActionHandler(object):
         Processes the list of subtitle results, sorts them, limits them,
         and adds them to the Kodi listing.
         """
+        plugin_handle = int(sys_argv[1])
         
         def type_sort_key_local(item_type_val):
             if item_type_val == 1: return 0
@@ -1499,18 +1621,23 @@ class ActionHandler(object):
             if not isinstance(date_val, str) or not date_val:
                 return datetime.min
 
+            iso_match = re.match(r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d+))?$", date_val)
+            if iso_match:
+                main, frac = iso_match.group(1), iso_match.group(2)
+                if frac:
+                    frac = (frac + "000000")[:6]
+                    date_val = f"{main}.{frac}"
+                else:
+                    date_val = main
+
             try:
                 return datetime.fromisoformat(date_val)
             except Exception as iso_err:
-                logger(f"fromisoformat failed for '{date_val}': {iso_err}", xbmc.LOGDEBUG)
+                logger(f"parse_api_date_local ERROR: fromisoformat failed for '{date_val}': {iso_err}", xbmc.LOGINFO)
 
             try:
                 if "." in date_val:
-                    main, frac = date_val.split(".")
-                    frac = "".join(c for c in frac if c.isdigit())
-                    frac_padded = frac.ljust(6, "0")[:6]
-                    full_date = f"{main}.{frac_padded}"
-                    return datetime.strptime(full_date, "%Y-%m-%dT%H:%M:%S.%f")
+                    return datetime.strptime(date_val, "%Y-%m-%dT%H:%M:%S.%f")
                 else:
                     return datetime.strptime(date_val, "%Y-%m-%dT%H:%M:%S")
             except Exception as fallback_err:
@@ -1593,11 +1720,13 @@ class ActionHandler(object):
         final_list_to_display = sorted_result_list[:results_to_display_count]
 
         if not final_list_to_display:
-            logger("No results to display after sorting and limiting.", xbmc.LOGINFO)
+            logger("No subtitle results were displayed in the Kodi dialog! (no results after sorting/limiting)")
+            xbmcplugin.endOfDirectory(plugin_handle)
             return
 
-        logger(f"Displaying {len(final_list_to_display)} of {len(result_list)} results (limit: {results_to_display_count}, sort: {sort_option}).", xbmc.LOGDEBUG)
-                
+        logger(f"Displaying {len(final_list_to_display)} of {len(result_list)} results (limit: {results_to_display_count}, sort: {sort_option}).", xbmc.LOGINFO)
+        displayed_count = 0
+
         for result_item in final_list_to_display:
             api_title = result_item.get("Title", "Unknown Title")
             api_year = result_item.get("Year")
@@ -1605,7 +1734,7 @@ class ActionHandler(object):
             api_episode = result_item.get("Episode")
             api_release = result_item.get("Release", "")
 
-            logger(f"Processing result_item: {result_item}", xbmc.LOGDEBUG)
+            logger(f"Processing result_item: {result_item}", xbmc.LOGINFO)
 
             label2_parts = [api_title]
 
@@ -1703,8 +1832,18 @@ class ActionHandler(object):
             if media_id:
                 url = f"plugin://{ADDON_ID}/?action=download&media_id={media_id}&type={media_type}&lang={icon_code}"
                 xbmcplugin.addDirectoryItem(handle=plugin_handle, url=url, listitem=listitem, isFolder=False)
+                displayed_count += 1
             else:
                 logger(f"Skipping result item '{api_title}' because it has no 'Id'.", xbmc.LOGWARNING)
+                
+        xbmcplugin.endOfDirectory(plugin_handle)
+        
+        if displayed_count == len(final_list_to_display) and displayed_count > 0:
+            logger(f"All {displayed_count} subtitle results successfully displayed in the Kodi dialog.")
+        elif displayed_count > 0:
+            logger(f"{displayed_count} of {len(final_list_to_display)} prepared subtitle results displayed in the Kodi dialog.", xbmc.LOGWARNING)
+        else:
+            logger("No subtitle results were displayed in the Kodi dialog!", xbmc.LOGERROR)
 
 
     def kodi_load_subtitle(self, subtitle_file_path):
@@ -1712,7 +1851,8 @@ class ActionHandler(object):
         Prepares and passes the subtitle file path to the Kodi player.
         Performs Latin/Cyrillic conversion if configured and necessary.
         """
-        logger(f"Starting subtitle load process for: {subtitle_file_path}", xbmc.LOGDEBUG)
+        plugin_handle = int(sys_argv[1])
+        logger(f"Starting subtitle load process for: {subtitle_file_path}", xbmc.LOGINFO)
 
         list_item = xbmcgui.ListItem(label="subtitle")
 
@@ -1726,7 +1866,7 @@ class ActionHandler(object):
             logger(f"Invalid value for 'titlovi-lat-cyr-conversion' setting: '{setting_value}'. Using default (no conversion).", xbmc.LOGERROR)
         except Exception as e:
             logger(f"Error reading subtitle conversion setting: {e}. Using default (no conversion).", xbmc.LOGERROR)
-        logger(f"Subtitle conversion mode set to: {lat_cyr_conversion.name}", xbmc.LOGDEBUG)
+        logger(f"Subtitle conversion mode set to: {lat_cyr_conversion.name}", xbmc.LOGINFO)
 
         original_path = subtitle_file_path
         base_filename = os.path.basename(subtitle_file_path)
@@ -1737,23 +1877,24 @@ class ActionHandler(object):
                                 ".converted.cyr" in base_filename)
 
         if needs_conversion and not is_already_converted and not is_dummy_file:
-            logger(f"Attempting {lat_cyr_conversion.name} conversion for file: {original_path}", xbmc.LOGDEBUG)
-            converted_file = None
+            logger(f"Attempting {lat_cyr_conversion.name} conversion for file: {original_path}", xbmc.LOGINFO)
             try:
                 converted_file = handle_lat_cyr_conversion(original_path, lat_cyr_conversion)
 
-                if converted_file is not None:
-                    logger(f"Conversion successful. Using converted file: {converted_file}", xbmc.LOGDEBUG)
+                if converted_file is not None and converted_file != original_path:
+                    logger(f"Conversion successful. Using converted file: {converted_file}", xbmc.LOGINFO)
                     subtitle_file_path = converted_file
+                elif converted_file == original_path:
+                    logger(f"Conversion was not needed. Using original file: {original_path}", xbmc.LOGINFO)
                 else:
                     logger(f"Subtitle conversion failed. Using original file: {original_path}", xbmc.LOGWARNING)
                     show_notification(GET_STRING(32011))
+
             except Exception as e:
                 logger(f"Unexpected error during subtitle conversion call: {e}. Using original file: {original_path}", xbmc.LOGERROR)
                 show_notification(GET_STRING(32011))
-                subtitle_file_path = original_path
 
-        logger(f"Passing subtitle path to Kodi player: {subtitle_file_path}", xbmc.LOGDEBUG)
+        logger(f"Passing subtitle path to Kodi player: {subtitle_file_path}", xbmc.LOGINFO)
         try:
             xbmcplugin.addDirectoryItem(handle=plugin_handle, url=subtitle_file_path, listitem=list_item, isFolder=False)
             logger("Successfully added subtitle item to Kodi.")
@@ -1781,7 +1922,7 @@ class ActionHandler(object):
             display_names_without_ext = subtitle_filenames
 
         dialog = xbmcgui.Dialog()
-        logger(f"Showing dialog with {len(display_names_without_ext)} options (displayed without extensions).", xbmc.LOGDEBUG)
+        logger(f"Showing dialog with {len(display_names_without_ext)} options (displayed without extensions).", xbmc.LOGINFO)
         selected_index = dialog.select(
             heading = GET_STRING(32012),
             list = display_names_without_ext
@@ -1791,7 +1932,7 @@ class ActionHandler(object):
             logger("User cancelled subtitle selection dialog.")
         else:
             if 0 <= selected_index < len(subtitle_filenames):
-                logger(f"User selected index: {selected_index} (corresponds to filename: '{subtitle_filenames[selected_index]}')", xbmc.LOGDEBUG)
+                logger(f"User selected index: {selected_index} (corresponds to filename: '{subtitle_filenames[selected_index]}')", xbmc.LOGINFO)
             else:
                 logger(f"Dialog returned unexpected index: {selected_index}. Treating as cancellation.", xbmc.LOGERROR)
                 selected_index = -1
@@ -1817,7 +1958,7 @@ class ActionHandler(object):
 
             subtitle_folder_name = f"titlovi_com_subtitle_{media_id}_{media_type}_{lang_code or 'unknown'}"
             subtitle_folder_path = os.path.join(TEMP_DIR, subtitle_folder_name)
-            logger(f"Target subtitle folder: {subtitle_folder_path}", xbmc.LOGDEBUG)
+            logger(f"Target subtitle folder: {subtitle_folder_path}", xbmc.LOGINFO)
 
             dummy_global_filename = "dummy_subtitle.srt"
             dummy_global_path = os.path.join(TEMP_DIR, dummy_global_filename)
@@ -1839,14 +1980,14 @@ class ActionHandler(object):
                 logger("Attempting to download and extract subtitles.")
                 download_url = f"https://titlovi.com/download/?type={media_type}&mediaid={media_id}"
                 try:
-                    logger(f"Attempting download from: {download_url}", xbmc.LOGDEBUG)
+                    logger(f"Attempting download from: {download_url}", xbmc.LOGINFO)
                     user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.6312.106 Safari/537.36"
                     referer = "www.titlovi.com"
                     headers = {"User-Agent": user_agent, "Referer": referer}
                     timeout = int(GET_SETTING("request_timeout") or 10)
                     response = requests.get(download_url, headers=headers, timeout=timeout)
                     if response.status_code != requests.codes.ok:
-                        logger(f"Download failed with status code: {response.status_code}", xbmc.LOGDEBUG)
+                        logger(f"Download failed with status code: {response.status_code}", xbmc.LOGINFO)
                         show_notification(GET_STRING(32013));
                         return
                 except requests.exceptions.Timeout:
@@ -1861,7 +2002,7 @@ class ActionHandler(object):
                 extracted_final_filenames = []
                 try:
                     os.makedirs(subtitle_folder_path, exist_ok=True)
-                    logger(f"Ensured target directory exists: {subtitle_folder_path}", xbmc.LOGDEBUG)
+                    logger(f"Ensured target directory exists: {subtitle_folder_path}", xbmc.LOGINFO)
                     zip_file = zipfile.ZipFile(io.BytesIO(response.content))
                     existing_files_in_dir = {f.lower() for f in os.listdir(subtitle_folder_path)} if os.path.isdir(subtitle_folder_path) else set()
                     used_filenames_in_zip = set()
@@ -1892,9 +2033,9 @@ class ActionHandler(object):
 
                     use_folder_prefix = len(parent_dirs) > 1
                     if use_folder_prefix:
-                        logger("Multiple subtitle locations found. Using 'folder - file' naming.", xbmc.LOGDEBUG)
+                        logger("Multiple subtitle locations found. Using 'folder - file' naming.", xbmc.LOGINFO)
                     else:
-                        logger("Subtitles in single location. Using simple file naming.", xbmc.LOGDEBUG)
+                        logger("Subtitles in single location. Using simple file naming.", xbmc.LOGINFO)
 
                     for member, original_path_in_zip, normalized_parts in valid_subs_to_extract:
                         filename_part, ext = os.path.splitext(normalized_parts[-1])
@@ -1916,7 +2057,7 @@ class ActionHandler(object):
                         used_filenames_in_zip.add(final_filename.lower())
                         
                         target_path = os.path.join(subtitle_folder_path, final_filename)
-                        logger(f"Preparing to extract '{original_path_in_zip}' as '{final_filename}'", xbmc.LOGDEBUG)
+                        logger(f"Preparing to extract '{original_path_in_zip}' as '{final_filename}'", xbmc.LOGINFO)
                         
                         try:
                             with zip_file.open(member) as source, open(target_path, "wb") as target: target.write(source.read())
@@ -1930,7 +2071,7 @@ class ActionHandler(object):
                         show_notification(GET_STRING(32016));
                         return
                         
-                    logger(f"Successfully extracted files with final names: {extracted_final_filenames}", xbmc.LOGDEBUG)
+                    logger(f"Successfully extracted files with final names: {extracted_final_filenames}", xbmc.LOGINFO)
                     download_successful = True
 
                 except zipfile.BadZipFile:
@@ -1977,11 +2118,11 @@ class ActionHandler(object):
             if len(subtitle_files_info) == 1:
                 selected_root, selected_fname = subtitle_files_info[0]
                 final_subtitle_path = os.path.join(selected_root, selected_fname)
-                logger(f"Automatically selecting the only subtitle found in specific folder: {final_subtitle_path}", xbmc.LOGDEBUG)
+                logger(f"Automatically selecting the only subtitle found in specific folder: {final_subtitle_path}", xbmc.LOGINFO)
                 self.kodi_load_subtitle(final_subtitle_path)
 
             elif len(subtitle_files_info) > 1:
-                logger(f"Found multiple subtitles ({len(subtitle_files_info)}) in specific folder, showing selection dialog.", xbmc.LOGDEBUG)
+                logger(f"Found multiple subtitles ({len(subtitle_files_info)}) in specific folder, showing selection dialog.", xbmc.LOGINFO)
                 display_filenames = [fname for _, fname in subtitle_files_info]
                 index = self.show_subtitle_picker_dialog(display_filenames)
 
@@ -1990,13 +2131,13 @@ class ActionHandler(object):
                     dummy_created_or_found = False
                     try:
                         if os.path.exists(dummy_global_path):
-                            logger(f"Global dummy file already exists: {dummy_global_path}", xbmc.LOGDEBUG)
+                            logger(f"Global dummy file already exists: {dummy_global_path}", xbmc.LOGINFO)
                             dummy_created_or_found = True
                         else:
-                            logger(f"Creating global dummy file: {dummy_global_path}", xbmc.LOGDEBUG)
+                            logger(f"Creating global dummy file: {dummy_global_path}", xbmc.LOGINFO)
                             with open(dummy_global_path, "w", encoding="utf-8") as f: f.write("1\n00:00:00,100 --> 00:00:00,500\n\n")
                             dummy_created_or_found = True
-                            logger("Global dummy file created successfully.", xbmc.LOGDEBUG)
+                            logger("Global dummy file created successfully.", xbmc.LOGINFO)
                     except Exception as create_err:
                          logger(f"Error ensuring global dummy file exists: {create_err}", xbmc.LOGERROR)
                     
@@ -2009,7 +2150,7 @@ class ActionHandler(object):
                             try:
                                 fallback_root, fallback_fname = subtitle_files_info[0]
                                 fallback_path = os.path.join(fallback_root, fallback_fname)
-                                logger(f"Fallback: Loading first subtitle from list: {fallback_path}", xbmc.LOGDEBUG)
+                                logger(f"Fallback: Loading first subtitle from list: {fallback_path}", xbmc.LOGINFO)
                                 self.kodi_load_subtitle(fallback_path)
                             except IndexError:
                                 logger("Fallback failed: Could not access first subtitle info (IndexError).", xbmc.LOGERROR)
@@ -2043,8 +2184,7 @@ if action_handler.validate_params():
     if is_user_loggedin:
         logger("User is logged in.")
         action_handler.handle_action()
-
-if plugin_handle != -1:
-    xbmcplugin.endOfDirectory(plugin_handle)
+    else:
+        logger("User login failed.", xbmc.LOGWARNING)
 else:
-    logger("Invalid plugin handle. endOfDirectory not called.", xbmc.LOGWARNING)
+    logger("Invalid or missing parameters for action.", xbmc.LOGWARNING)

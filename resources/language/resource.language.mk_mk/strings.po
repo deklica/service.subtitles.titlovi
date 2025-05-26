@@ -272,18 +272,26 @@ msgid "When enabled and an IMDb ID is found, it will be used as the primary sear
 msgstr "Кога е овозможено и IMDb ID е пронајден, ќе се користи како примарен параметар за пребарување, потенцијално игнорирајќи го насловот/годината."
 
 msgctxt "#32322"
+msgid "Include type in search (Movie/Series detection)"
+msgstr "Вклучи тип во пребарувањето (детекција Филм/Серија)"
+
+msgctxt "#32323"
+msgid "Attempts to detect if the item is a Movie or TV Series to refine search results, but has no effect if an IMDb ID is found."
+msgstr "Се обидува да детектира дали ставката е филм или ТВ серија за да ги подобри резултатите од пребарувањето, но нема ефект доколку IMDb ID е пронајден."
+
+msgctxt "#32324"
 msgid "Include release year in search"
 msgstr "Вклучи година на издавање во пребарувањето"
 
-msgctxt "#32323"
+msgctxt "#32325"
 msgid "Improves accuracy for movies, may affect series results, but has no effect if an IMDb ID is found."
 msgstr "Ја подобрува точноста за филмови, може да влијае на резултатите за серии, но нема ефект доколку се пронајде IMDb ID."
 
-msgctxt "#32324"
+msgctxt "#32326"
 msgid "For series, include Pilot episodes"
 msgstr "За серии, вклучи Пилот епизоди"
 
-msgctxt "#32325"
+msgctxt "#32327"
 msgid "For series, include Special episodes"
 msgstr "За серии, вклучи Специјални епизоди"
 

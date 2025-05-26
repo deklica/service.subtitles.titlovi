@@ -1,5 +1,5 @@
 # service.subtitles.titlovi  
-<B>Official Kodi subtitles addon for Titlovi.com v1.9.2</B>  
+<B>Official Kodi subtitles addon for Titlovi.com v1.9.3</B>  
 System Requirements: Kodi v20 (nexus) or higher  
 
 Search and download subtitles for Movies, Documentaries and TV Series from <B>Titlovi.com</B>.  

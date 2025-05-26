@@ -1,8 +1,17 @@
 [COLOR darkgoldenrod]Titlovi.com Addon - Changelog[/COLOR]
 
+[COLOR dodgerblue][B]v1.9.3 (25.05.2025.)[/B][/COLOR]
+[B]Ispravke:[/B]
+- Optimizovana pretraga titlova i sređena detekcija iz imena fajla (potrebno kod Kodi kao externi player)
+- Dodatne korekcije za problem sa datumima
+- Dodat parametar type u settings
+- Debug log sad loguje sve, nije potrebno dodatno setovati u Kodiju
+- Sitne prepravke
+
+
 [COLOR dodgerblue][B]v1.9.2 (20.05.2025.)[/B][/COLOR]
 [B]Ispravke:[/B]
-- Ispravljen bag za datatime, radi pretraga za Kodi kao externi player
+- Ispravljen bag za datatime, radi pretraga za Kodi kao externi player i problem kod ponovljene pretrage
 - Izmene kod keširanja
 - Sitne izmene
 
@@ -10,7 +19,7 @@
 [COLOR dodgerblue][B]v1.9.1 (13.05.2025.)[/B][/COLOR]
 [B]Ispravke:[/B]
 - Dorađene i dodate neke opcije sortiranja
-- Ispravljen bag sa upisom u keš
+- Ispravljen bag sa upisom u keš, keš trajao 30 dana
 
 
 [COLOR dodgerblue][B]v1.9.0 (28.04.2025. - official)[/B][/COLOR]

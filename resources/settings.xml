@@ -182,25 +182,32 @@
 				</setting>
 				<setting id="sort_series_episodes" type="boolean" label="32318" help="32319">	<!-- Sort series -->
 					<level>0</level>
-					<default>false</default>
+					<default>true</default>
 					<control type="toggle"/>
 				</setting>
+			</group>
+			<group id="3">
 				<setting id="include_imdb_id_in_search" type="boolean" label="32320" help="32321">	<!-- Search using IMDb ID -->
 					<level>0</level>
 					<default>true</default>
 					<control type="toggle"/>
 				</setting>
-				<setting id="include_year_in_search" type="boolean" label="32322" help="32323">	<!-- Include release year in search -->
+				<setting id="include_type_in_search" type="boolean" label="32322" help="32323">	<!-- Include type in search (Movie/Series detection) -->
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="include_year_in_search" type="boolean" label="32324" help="32325">	<!-- Include release year in search -->
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="include_pilot_episodes" type="boolean" label="32326">	<!-- For series, include Pilot episodes -->
 					<level>0</level>
 					<default>false</default>
 					<control type="toggle"/>
 				</setting>
-				<setting id="include_pilot_episodes" type="boolean" label="32324">	<!-- For series, include Pilot episodes -->
-					<level>0</level>
-					<default>false</default>
-					<control type="toggle"/>
-				</setting>
-				<setting id="include_specials" type="boolean" label="32325">	<!-- For series, include Special episodes -->
+				<setting id="include_specials" type="boolean" label="32327">	<!-- For series, include Special episodes -->
 					<level>0</level>
 					<default>false</default>
 					<control type="toggle"/>

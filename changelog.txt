@@ -1,5 +1,11 @@
 [COLOR darkgoldenrod]Titlovi.com Addon - Changelog[/COLOR]
 
+[COLOR dodgerblue][B]v2.0.0 (02.06.2025.)[/B][/COLOR]
+[B]Promene:[/B]
+- Finalna verzija spremna za zvaničan Kodi repozitorijum
+  (stara verzija addona v1.2.0 sa drugim ID-jem postaje zastarela (deprecated))
+
+
 [COLOR dodgerblue][B]v1.9.3 (25.05.2025.)[/B][/COLOR]
 [B]Ispravke:[/B]
 - Optimizovana pretraga titlova i sređena detekcija iz imena fajla (potrebno kod Kodi kao externi player)

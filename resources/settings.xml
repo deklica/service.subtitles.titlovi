@@ -216,7 +216,7 @@
 		</category>
 
 		<category id="tools" label="32400">	<!-- Tools -->
-			<group id="1" label="32401">	<!-- Maintenance -->
+			<group id="1" label="32401">	<!-- Cache -->
 				<setting id="cache_info_display" type="string" label="32402" help="32403">	<!-- Cache Status: -->
 					<level>0</level>
 					<default>...</default>

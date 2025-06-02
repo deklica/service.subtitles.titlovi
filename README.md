@@ -1,8 +1,8 @@
 # service.subtitles.titlovi  
-<B>Official Kodi subtitles addon for Titlovi.com v1.9.3</B>  
-System Requirements: Kodi v20 (nexus) or higher  
+<b>Official Kodi subtitles addon for Titlovi.com v2.0.0</b>  
+System Requirements: Kodi v19 (matrix) or higher  
 
-Search and download subtitles for Movies, Documentaries and TV Series from <B>Titlovi.com</B>.  
+Search and download subtitles for Movies, Documentaries and TV Series from <b>Titlovi.com</b>.  
 Supported languages: English, Serbian, Croatian, Bosnian, Macedonian and Slovenian.  
 
 Ovo je značajno prerađena verzija Titlovi.com dodatka, unapređena boljim performansama, većom pouzdanošću i novim funkcionalnostima.
@@ -12,7 +12,8 @@ Posebna zahvalnost <a href="https://github.com/tturkalj/service.subtitles.titlov
 Tip 1:  
 Kada koristite ručno pretraživanje za TV serije koristite format za sezonu i epizodu kao u ovom primeru:  
   The Wire S01E01 ili The Wire S1E2  
-Možete upisati i godinu izdanja.  
+  (dozvoljene su i druge varijante: 1x03, 2024x43, Season 1 Episode 3, sezona 1 epizoda 03 i td.)  
+Možete upisati i godinu izdanja i za film i za seriju.  
 Za precizniju ručnu pretragu umesto naziva filma/serije možete koristiti IMDb tag, na pr. tt1234567  
 Za pretragu sezonskih titlova, kada su u jednom zip fajlu, koristite pored oznake sezone i format E0 ili E00 za epizodu  
 Za pretragu titlova svih sezona u jednom fajlu koristite S0E0 ili S00E00  

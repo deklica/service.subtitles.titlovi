@@ -194,12 +194,12 @@
 				</setting>
 				<setting id="include_type_in_search" type="boolean" label="32322" help="32323">	<!-- Include type in search (Movie/Series detection) -->
 					<level>0</level>
-					<default>true</default>
+					<default>false</default>
 					<control type="toggle"/>
 				</setting>
 				<setting id="include_year_in_search" type="boolean" label="32324" help="32325">	<!-- Include release year in search -->
 					<level>0</level>
-					<default>true</default>
+					<default>false</default>
 					<control type="toggle"/>
 				</setting>
 				<setting id="include_pilot_episodes" type="boolean" label="32326">	<!-- For series, include Pilot episodes -->

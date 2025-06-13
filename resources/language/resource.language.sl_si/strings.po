@@ -75,6 +75,10 @@ msgctxt "#32019"
 msgid "Error: No subtitles found in cache"
 msgstr "Napaka: V predpomnilniku ni podnapisov"
 
+msgctxt "#32020"
+msgid "Server connection timed out"
+msgstr "Čas za povezavo s strežnikom je potekel"
+
 msgctxt "#32021"
 msgid "[CR][B][COLOR blue]{}[/COLOR][/B], it seems your API access is disabled.[CR][CR]For more information, please visit [B][COLOR yellow]titlovi.com/donacije[/COLOR][/B]."
 msgstr "[CR][B][COLOR blue]{}[/COLOR][/B], zdi se, da je vaš dostop do API-ja onemogočen.[CR][CR]Za več informacij obiščite [B][COLOR yellow]titlovi.com/donacije[/COLOR][/B]."
@@ -195,13 +199,21 @@ msgctxt "#32221"
 msgid "Maximum time to wait for a response from the server."
 msgstr "Najdaljši čas čakanja na odgovor strežnika."
 
-msgctxt "#32225"
+msgctxt "#32222"
+msgid "Subtitle Dialog Delay (seconds)"
+msgstr "Zakasnitev prikaza dialoga s podnapisi (sekunde)"
+
+msgctxt "#32223"
+msgid "Delay before showing subtitle results. Increase if the dialog sometimes gets stuck without displaying results."
+msgstr "Zakasnitev pred prikazom rezultatov podnapisov. Povečajte vrednost, če se včasih okno zatakne brez prikaza rezultatov."
+
+msgctxt "#32224"
 msgid "Results Limit"
 msgstr "Omejitev rezultatov"
 
-msgctxt "#32226"
-msgid "Maximum number of results per API request (currently fixed)."
-msgstr "Največje število rezultatov na zahtevo API-ja (trenutno določeno)."
+msgctxt "#32225"
+msgid "Maximum number of results per API request (maximum is currently fixed)."
+msgstr "Največje število rezultatov na zahtevo API (trenutno fiksna vrednost)."
 
 msgctxt "#32300"
 msgid "Features"
@@ -238,6 +250,10 @@ msgstr "Možnosti iskanja"
 msgctxt "#32311"
 msgid "Search results are sorted by:"
 msgstr "Rezultati iskanja so razvrščeni po:"
+
+msgctxt "#32312"
+msgid "Results are initially sorted by Type, then Title, and Year. The chosen sorting option is applied on top of this default order."
+msgstr "Rezultati so najprej razvrščeni po tipu, nato po naslovu in letu. Izbrana možnost razvrščanja se uporabi na tem osnovnem vrstnem redu."
 
 msgctxt "#32313"
 msgid "Subtitle upload date"
@@ -284,8 +300,8 @@ msgid "Include release year in search"
 msgstr "V iskanje vključi leto izdaje"
 
 msgctxt "#32325"
-msgid "Improves accuracy for movies, may affect series results, but has no effect if an IMDb ID is found."
-msgstr "Izboljša natančnost za filme, lahko vpliva na rezultate za serije, vendar nima učinka, če je najden IMDb ID."
+msgid "Improves accuracy for movies, may affect series results and can sometimes be incorrect, but has no effect if an IMDb ID is found."
+msgstr "Izboljša natančnost za filme, lahko vpliva na rezultate serij in je včasih napačna, vendar nima učinka, če je najden IMDb ID."
 
 msgctxt "#32326"
 msgid "For series, include Pilot episodes"

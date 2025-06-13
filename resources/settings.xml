@@ -127,20 +127,32 @@
 					<default>10</default>
 					<constraints>
 						<minimum>5</minimum>
-						<maximum>20</maximum>
 						<step>1</step>
+						<maximum>20</maximum>
 					</constraints>
 					<control type="slider" format="integer">
 						<popup>false</popup>
 					</control>
 				</setting>
-				<setting id="results_limit" type="integer" label="32225" help="32226">	<!-- Results Limit -->
+				<setting id="dialog_delay" type="number" label="32222" help="32223">	<!-- Subtitle Dialog Delay -->
+					<level>0</level>
+					<default>0.3</default>
+					<constraints>
+						<minimum>0.0</minimum>
+						<step>0.1</step>
+						<maximum>1.0</maximum>
+					</constraints>
+					<control type="slider" format="number">
+						<popup>false</popup>
+					</control>
+				</setting>
+				<setting id="results_limit" type="integer" label="32224" help="32225">	<!-- Results Limit -->
 					<level>0</level>
 					<default>50</default>
 					<constraints>
 						<minimum>1</minimum>
-						<maximum>50</maximum>
 						<step>1</step>
+						<maximum>50</maximum>
 					</constraints>
 					<control type="slider" format="integer">
 						<popup>false</popup>
@@ -165,7 +177,7 @@
 				</setting>
 			</group>
 			<group id="2" label="32310">	<!-- Search Options -->
-				<setting id="sort_order" type="integer" label="32311" help="">	<!-- Search results are sorted by -->
+				<setting id="sort_order" type="integer" label="32311" help="32312">	<!-- Search results are sorted by -->
 					<level>0</level>
 					<default>0</default>
 					<constraints>

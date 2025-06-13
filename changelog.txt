@@ -1,10 +1,17 @@
 [COLOR darkgoldenrod]Titlovi.com Addon - Changelog[/COLOR]
 
+[COLOR dodgerblue][B]v2.0.1 (12.06.2025.)[/B][/COLOR]
+[B]Promene:[/B]
+- Finalna verzija sa par ispravki za Kodi repo
+- Izbačena potreba za chardet modulom, pojednostavljena detekcija enkodinga
+- Uklonjen requests modul, ubačen simple_requests kao interni modul
+- Dodat tajming za prikaz titlova u dijalogu (dodato podešavanje), potencijalno rešava povremeno "zamrzavanje" dijalog prozora
+- Sitne prepravke
+  
 [COLOR dodgerblue][B]v2.0.0 (02.06.2025.)[/B][/COLOR]
 [B]Promene:[/B]
-- Finalna verzija spremna za zvaničan Kodi repozitorijum
+- Verzija spremna za zvaničan Kodi repozitorijum
   (stara verzija addona v1.2.0 sa drugim ID-jem postaje zastarela (deprecated))
-
 
 [COLOR dodgerblue][B]v1.9.3 (25.05.2025.)[/B][/COLOR]
 [B]Ispravke:[/B]
@@ -14,19 +21,16 @@
 - Debug log sad loguje sve, nije potrebno dodatno setovati u Kodiju
 - Sitne prepravke
 
-
 [COLOR dodgerblue][B]v1.9.2 (20.05.2025.)[/B][/COLOR]
 [B]Ispravke:[/B]
 - Ispravljen bag za datatime, radi pretraga za Kodi kao externi player i problem kod ponovljene pretrage
 - Izmene kod keširanja
 - Sitne izmene
 
-
 [COLOR dodgerblue][B]v1.9.1 (13.05.2025.)[/B][/COLOR]
 [B]Ispravke:[/B]
 - Dorađene i dodate neke opcije sortiranja
 - Ispravljen bag sa upisom u keš, keš trajao 30 dana
-
 
 [COLOR dodgerblue][B]v1.9.0 (28.04.2025. - official)[/B][/COLOR]
 [B]Promene:[/B]

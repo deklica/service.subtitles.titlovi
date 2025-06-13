@@ -75,6 +75,10 @@ msgctxt "#32019"
 msgid "Error: No subtitles found in cache"
 msgstr "Грешка: Нема титлова у кешу"
 
+msgctxt "#32020"
+msgid "Server connection timed out"
+msgstr "Време за повезивање са сервером је истекло"
+
 msgctxt "#32021"
 msgid "[CR][B][COLOR blue]{}[/COLOR][/B], it seems your API access is disabled.[CR][CR]For more information, please visit [B][COLOR yellow]titlovi.com/donacije[/COLOR][/B]."
 msgstr "[CR][B][COLOR blue]{}[/COLOR][/B], изгледа да вам је API онемогућен.[CR][CR]Више информација потражите на [B][COLOR yellow]titlovi.com/donacije[/COLOR][/B]."
@@ -137,7 +141,7 @@ msgstr "Унесите Вашу titlovi.com лозинку."
 
 msgctxt "#32110"
 msgid "API access must be enabled to use the service."
-msgstr "АПИ приступ мора бити омогућен за коришћење сервиса."
+msgstr "API приступ мора бити омогућен за коришћење сервиса."
 
 msgctxt "#32111"
 msgid "More info at [B][COLOR yellow]titlovi.com/donacije[/COLOR][/B]."
@@ -195,13 +199,21 @@ msgctxt "#32221"
 msgid "Maximum time to wait for a response from the server."
 msgstr "Максимално време чекања на одговор од сервера."
 
-msgctxt "#32225"
+msgctxt "#32222"
+msgid "Subtitle Dialog Delay (seconds)"
+msgstr "Кашњење дијалога са титловима (секунде)"
+
+msgctxt "#32223"
+msgid "Delay before showing subtitle results. Increase if the dialog sometimes gets stuck without displaying results."
+msgstr "Кашњење пре приказа резултата титлова. Повећајте ако се дијалог понекад заглави без приказа резултата."
+
+msgctxt "#32224"
 msgid "Results Limit"
 msgstr "Ограничење резултата"
 
-msgctxt "#32226"
-msgid "Maximum number of results per API request (currently fixed)."
-msgstr "Максималан број резултата по АПИ захтеву (тренутно фиксно)."
+msgctxt "#32225"
+msgid "Maximum number of results per API request (maximum is currently fixed)."
+msgstr "Максималан број резултата по API захтеву (максимална вредност је тренутно фиксна)."
 
 msgctxt "#32300"
 msgid "Features"
@@ -238,6 +250,10 @@ msgstr "Опције претраге"
 msgctxt "#32311"
 msgid "Search results are sorted by:"
 msgstr "Резултати претраге су сортирани по:"
+
+msgctxt "#32312"
+msgid "Results are initially sorted by Type, then Title, and Year. The chosen sorting option is applied on top of this default order."
+msgstr "Резултати су прво сортирани по типу, затим по називу и години. Изабрана опција сортирања се примењује преко овог подразумеваног реда."
 
 msgctxt "#32313"
 msgid "Subtitle upload date"
@@ -284,8 +300,8 @@ msgid "Include release year in search"
 msgstr "Укључи годину издања у претрагу"
 
 msgctxt "#32325"
-msgid "Improves accuracy for movies, may affect series results, but has no effect if an IMDb ID is found."
-msgstr "Побољшава тачност за филмове, може утицати на резултате за серије, али нема утицаја уколико се пронађе IMDb ID."
+msgid "Improves accuracy for movies, may affect series results and can sometimes be incorrect, but has no effect if an IMDb ID is found."
+msgstr "Побољшава тачност за филмове, може утицати на резултате за серије и понекад бити нетачна, али нема ефекта ако је пронађен IMDb ID."
 
 msgctxt "#32326"
 msgid "For series, include Pilot episodes"

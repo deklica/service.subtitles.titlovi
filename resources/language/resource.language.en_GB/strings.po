@@ -96,6 +96,10 @@ msgctxt "#32019"
 msgid "Error: No subtitles found in cache"
 msgstr ""
 
+msgctxt "#32020"
+msgid "Server connection timed out"
+msgstr ""
+
 msgctxt "#32021"
 msgid "[CR][B][COLOR blue]{}[/COLOR][/B], it seems your API access is disabled.[CR][CR]For more information, please visit [B][COLOR yellow]titlovi.com/donacije[/COLOR][/B]."
 msgstr ""
@@ -249,14 +253,24 @@ msgctxt "#32221"
 msgid "Maximum time to wait for a response from the server."
 msgstr ""
 
-# Setting label: Results Limit (disabled)
-msgctxt "#32225"
+# Setting label: Subtitle Dialog Delay slider
+msgctxt "#32222"
+msgid "Subtitle Dialog Delay (seconds)"
+msgstr ""
+
+# Setting help: Subtitle Dialog Delay slider
+msgctxt "#32223"
+msgid "Delay before showing subtitle results. Increase if the dialog sometimes gets stuck without displaying results."
+msgstr ""
+
+# Setting label: Results Limit
+msgctxt "#32224"
 msgid "Results Limit"
 msgstr ""
 
-# Setting help: Result Limit (disabled)
-msgctxt "#32226"
-msgid "Maximum number of results per API request (currently fixed)."
+# Setting help: Result Limit
+msgctxt "#32225"
+msgid "Maximum number of results per API request (maximum is currently fixed)."
 msgstr ""
 
 
@@ -305,9 +319,14 @@ msgctxt "#32310"
 msgid "Search Options"
 msgstr ""
 
-# Setting label: Sort results order (disabled)
+# Setting label: Sort results order
 msgctxt "#32311"
 msgid "Search results are sorted by:"
+msgstr ""
+
+# Setting help: Sort results order
+msgctxt "#32312"
+msgid "Results are initially sorted by Type, then Title, and Year. The chosen sorting option is applied on top of this default order."
 msgstr ""
 
 # Option label: Subtitle upload date
@@ -367,7 +386,7 @@ msgstr ""
 
 # Setting help: Include year toggle
 msgctxt "#32325"
-msgid "Improves accuracy for movies, may affect series results, but has no effect if an IMDb ID is found."
+msgid "Improves accuracy for movies, may affect series results and can sometimes be incorrect, but has no effect if an IMDb ID is found."
 msgstr ""
 
 # Setting label: Include pilot toggle

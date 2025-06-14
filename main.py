@@ -278,7 +278,7 @@ LAT_TO_CYR = {
     "NJa": "Ња", "NJe": "Ње", "NJi": "Њи", "NJo": "Њо", "NJu": "Њу"
 }
 
-CYR_TO_LAT = {v: k for k, v in list(LAT_TO_CYR.items())}
+CYR_TO_LAT = {v: k for k, v in LAT_TO_CYR.items()}
 
 SPECIAL_REPLACEMENTS = {
     "Đ": "Dj", "đ": "dj",
@@ -528,7 +528,7 @@ def _replace_lat_cyr_letters(text, convert_option, encoding):
 
     conversion_map = LAT_TO_CYR if convert_option == ConversionMode.CONVERT_LAT_TO_CYR else CYR_TO_LAT
 
-    sorted_keys = sorted(list(conversion_map.keys()), key=len, reverse=True)
+    sorted_keys = sorted(conversion_map.keys(), key=len, reverse=True)
 
     def convert_match(match):
         tag_or_special = match.group(1)
@@ -1038,7 +1038,7 @@ class ActionHandler(object):
                 }
 
                 selected_custom_langs = []
-                for setting_id, lang_key in list(setting_to_lang_key.items()):
+                for setting_id, lang_key in setting_to_lang_key.items():
                     if GET_BOOL_SETTING(setting_id):
                         selected_custom_langs.append(lang_key)
                         logger(f"Custom language selected: {lang_key} (from setting {setting_id})", xbmc.LOGINFO)
